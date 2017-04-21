@@ -114,7 +114,8 @@ def lambda_handler(event, context):
         }
         changes.append(public_rrs)
 
-    if manage_private_asg_dns:
+    #  do we have any private IPs ?
+    if manage_private_asg_dns and len(asg_private_ips) > 0:
         # internal asg group record
         private_asg_record_name = eval(names_map['private_asg'][private_asg_record_template])
         private_rrs = {
