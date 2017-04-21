@@ -24,7 +24,7 @@ variable "service" {
 
 variable "private_instance_record_template" {
   description = "What should instance's private DNS record look like, choices are: 'service.az.domain' (ex: bastion.eu-west-1a.domain.tld) or 'service.instanceid.domain' (ex: web.i-0a3c65796c57c68d3.domain.tld)"
-  default     = "service.instanceid.domain"
+  default     = "service.az.domain"
 }
 
 variable "private_asg_record_template" {
