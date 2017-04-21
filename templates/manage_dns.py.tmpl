@@ -31,7 +31,7 @@ except Exception as e:
     
 names_map = {
     'private_instance': {
-        'service.az.domain': \"'{}.{}.{}'.format(service, instance_data['az'], domain)\",
+        'service.az.domain': \"'{}.{}.{}'.format(service, az, domain)\",
         'service.instanceid.domain': \"'{}.{}.{}'.format(service, message['EC2InstanceId'], domain)\"
     },
     'private_asg': {
@@ -71,6 +71,7 @@ def lambda_handler(event, context):
     changes = []
     
     if manage_instance_dns:
+        az = message['Details']['Availability Zone']
         instance_record_name = eval(names_map['private_instance'][private_instance_record_template])
         # instance has been launched
         if message['Event'] == 'autoscaling:EC2_INSTANCE_LAUNCH':
