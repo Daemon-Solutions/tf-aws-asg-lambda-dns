@@ -43,7 +43,6 @@ names_map = {
 }
 
 
-
 def lambda_handler(event, context):
 
     message, metadata = parse_event(event)
@@ -71,43 +70,13 @@ def lambda_handler(event, context):
     # holds DNS changes to do
     changes = []
     
-    # instance has been launched
-    if message['Event'] == 'autoscaling:EC2_INSTANCE_LAUNCH':
-        # do we have any public IP addresses?
-        if manage_public_asg_dns and len(asg_public_ips) > 0:
-            # public asg group record
-            public_asg_record_name = eval(names_map['public_asg'][public_asg_record_template])
-            public_rrs = {
-                'Action': 'UPSERT',
-                'ResourceRecordSet': {
-                    'Name': public_asg_record_name,
-                    'Type': 'A',
-                    'TTL': 60,
-                    'ResourceRecords': [{'Value': pub_ip} for pub_ip in asg_public_ips]
-                }
-            }
-            changes.append(public_rrs)
-        
-        if manage_private_asg_dns:
-            # internal asg group record
-            private_asg_record_name = eval(names_map['private_asg'][private_asg_record_template])
-            private_rrs = {
-                'Action': 'UPSERT',
-                'ResourceRecordSet': {
-                    'Name': private_asg_record_name,
-                    'Type': 'A',
-                    'TTL': 60,
-                    'ResourceRecords': [{'Value': priv_ip} for priv_ip in asg_private_ips]
-                }
-            }
-            changes.append(private_rrs)
-            
-        if manage_instance_dns:
+    if manage_instance_dns:
+        instance_record_name = eval(names_map['private_instance'][private_instance_record_template])
+        # instance has been launched
+        if message['Event'] == 'autoscaling:EC2_INSTANCE_LAUNCH':
             # update a record for an instance this trigger is for
-            # it will be service-ip-xx.xx.xx.xx.domain.
             instance_data = get_instance_metadata(message['EC2InstanceId'])
             instance_ip = instance_data['private_ip']
-            instance_record_name = eval(names_map['private_instance'][private_instance_record_template])
             single_instance_rr = {
                 'Action': 'UPSERT',
                 'ResourceRecordSet': {
@@ -118,11 +87,47 @@ def lambda_handler(event, context):
                 }
             }  
             changes.append(single_instance_rr)
-        
-        # apply dns updates
-        change_rrs(changes, zone_id)
-    else:
-        return True
+        # instance terminated
+        elif message['Event'] == 'autoscaling:EC2_INSTANCE_TERMINATE':
+            # get current dns record
+            resource_records_set = find_record(instance_record_name, zone_id)[0]
+            single_instance_rr = {
+                'Action': 'DELETE',
+                'ResourceRecordSet': resource_records_set
+            }
+            changes.append(single_instance_rr)
+
+    # do we have any public IP addresses?
+    if manage_public_asg_dns and len(asg_public_ips) > 0:
+        # public asg group record
+        public_asg_record_name = eval(names_map['public_asg'][public_asg_record_template])
+        public_rrs = {
+            'Action': 'UPSERT',
+            'ResourceRecordSet': {
+                'Name': public_asg_record_name,
+                'Type': 'A',
+                'TTL': 60,
+                'ResourceRecords': [{'Value': pub_ip} for pub_ip in asg_public_ips]
+            }
+        }
+        changes.append(public_rrs)
+
+    if manage_private_asg_dns:
+        # internal asg group record
+        private_asg_record_name = eval(names_map['private_asg'][private_asg_record_template])
+        private_rrs = {
+            'Action': 'UPSERT',
+            'ResourceRecordSet': {
+                'Name': private_asg_record_name,
+                'Type': 'A',
+                'TTL': 60,
+                'ResourceRecords': [{'Value': priv_ip} for priv_ip in asg_private_ips]
+            }
+        }
+        changes.append(private_rrs)
+
+    # apply dns updates
+    change_rrs(changes, zone_id)
 
 ### helpers ###
 
@@ -200,5 +205,3 @@ def get_asg_instances(asg_name):
         else:
             continue
     return return_value
-        
-        
