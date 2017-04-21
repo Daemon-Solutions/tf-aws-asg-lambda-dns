@@ -32,7 +32,7 @@ except Exception as e:
 names_map = {
     'private_instance': {
         'service.az.domain': \"'{}.{}.{}'.format(service, instance_data['az'], domain)\",
-        'service.ip.domain': \"'{}.{}.{}'.format(service, instance_data['private_ip'], domain)\"
+        'service.instanceid.domain': \"'{}.{}.{}'.format(service, message['EC2InstanceId'], domain)\"
     },
     'private_asg': {
         'service.internal.domain': \"'{}.internal.{}'.format(service, domain)\",
