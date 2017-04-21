@@ -91,12 +91,13 @@ def lambda_handler(event, context):
         # instance terminated
         elif message['Event'] == 'autoscaling:EC2_INSTANCE_TERMINATE':
             # get current dns record
-            resource_records_set = find_record(instance_record_name, zone_id)[0]
-            single_instance_rr = {
-                'Action': 'DELETE',
-                'ResourceRecordSet': resource_records_set
-            }
-            changes.append(single_instance_rr)
+            resource_records_set = find_record(instance_record_name, zone_id)
+            if len(resource_records_set) == 1:
+                single_instance_rr = {
+                    'Action': 'DELETE',
+                    'ResourceRecordSet': resource_records_set[0]
+                }
+                changes.append(single_instance_rr)
 
     # do we have any public IP addresses?
     if manage_public_asg_dns and len(asg_public_ips) > 0:
