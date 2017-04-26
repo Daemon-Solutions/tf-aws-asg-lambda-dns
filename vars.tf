@@ -2,6 +2,8 @@ variable "aws_region" {
   default = "eu-west-1"
 }
 
+variable "lambda_function_name" {}
+
 variable "lambda_version" {
   description = "Version for lambda function"
 }

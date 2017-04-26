@@ -56,13 +56,13 @@ resource "aws_s3_bucket_object" "upload_lambda_package" {
   source     = "/tmp/${var.service}-lambda/manage_dns-${var.lambda_version}.zip"
 }
 
-## create lambda fucntion
+## create lambda function
 resource "aws_lambda_function" "manage_dns" {
   depends_on        = ["aws_s3_bucket_object.upload_lambda_package"]
   s3_bucket         = "${aws_s3_bucket.bucket_for_lambda_package.id}"
   s3_key            = "manage_dns-${var.lambda_version}.zip"
   s3_object_version = "null"
-  function_name     = "manage_dns-${var.service}"
+  function_name     = "${var.lambda_function_name}"
   role              = "${aws_iam_role.lambda_manage_dns_role.arn}"
   handler           = "manage_dns.lambda_handler"
   runtime           = "python2.7"
