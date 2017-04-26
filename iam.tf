@@ -1,6 +1,6 @@
 # Lambda policy for logging
 resource "aws_iam_role_policy" "lambda_manage_dns_logging_policy" {
-  name = "lambda_manage_dns_logging_policy"
+  name = "${var.service}_lambda_dns_logging_policy"
   role = "${aws_iam_role.lambda_manage_dns_role.id}"
 
   policy = <<EOF
@@ -23,7 +23,7 @@ EOF
 
 # Lambda policy for managing dns
 resource "aws_iam_role_policy" "lambda_manage_dns_policy" {
-  name = "lambda_manage_dns_policy"
+  name = "${var.service}_lambda_route53_policy"
   role = "${aws_iam_role.lambda_manage_dns_role.id}"
 
   policy = <<EOF
@@ -61,7 +61,7 @@ EOF
 
 # Lambda role
 resource "aws_iam_role" "lambda_manage_dns_role" {
-  name = "lambda_manage_dns_role"
+  name = "${var.service}_lambda_manage_dns_role"
 
   assume_role_policy = <<EOF
 {
