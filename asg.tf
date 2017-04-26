@@ -5,6 +5,7 @@ resource "aws_autoscaling_notification" "manage_dns_asg_notification" {
   ]
 
   notifications = [
+    "autoscaling:TEST_NOTIFICATION",
     "autoscaling:EC2_INSTANCE_LAUNCH",
     "autoscaling:EC2_INSTANCE_TERMINATE",
   ]
