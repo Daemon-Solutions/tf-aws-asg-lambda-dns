@@ -35,17 +35,17 @@ def generate_record_name(name_type, template, **kwargs):
 
     names_map = {
         'private_instance': {
-            'service.az.domain': Template('$service.$az.$domain'),
-            'service-az.domain': Template('$service-$az.$domain'),
-            'service.instanceid.domain': Template('$service.$instance_id.$domain'),
-            'service-instanceid.domain': Template('$service-$instance_id.$domain'),
+            'service.az.domain': Template('\$service.\$az.\$domain'),
+            'service-az.domain': Template('\$service-\$az.\$domain'),
+            'service.instanceid.domain': Template('\$service.\$instance_id.\$domain'),
+            'service-instanceid.domain': Template('\$service-\$instance_id.\$domain'),
         },
         'private_asg': {
-            'service.domain': Template('$service.$domain'),
-            'service.internal.domain': Template('$service.internal.$domain')
+            'service.domain': Template('\$service.\$domain'),
+            'service.internal.domain': Template('\$service.internal.\$domain')
         },
         'public_asg': {
-            'service.domain': Template('$service.$domain')
+            'service.domain': Template('\$service.\$domain')
         }
     }
     return names_map[name_type][template].substitute(**kwargs)
