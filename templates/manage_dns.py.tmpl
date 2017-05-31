@@ -132,7 +132,8 @@ def lambda_handler(event, context):
         changes.append(private_rrs)
 
     # apply dns updates
-    change_rrs(changes, zone_id)
+    if len(changes) > 0:
+        change_rrs(changes, zone_id)
 
 ### helpers ###
 
