@@ -84,7 +84,7 @@ def lambda_handler(event, context):
     
     if manage_instance_dns:
         # instance has been launched or asg created
-        if message['Event'] in [asg_event_types['test'], asg_event_types['launch']] and instances_metadata:
+        if instances_metadata:
             for instance_id,instance_info in instances_metadata.iteritems():
                 instance_ip = instance_info['private_ip']
                 az = instance_info['az']
@@ -98,19 +98,6 @@ def lambda_handler(event, context):
                         'TTL': 60,
                         'ResourceRecords': [{'Value': instance_ip}]
                     }
-                }
-                changes.append(instance_rrs)
-
-        # instance terminated, cannot batch in single invocation?
-        elif message['Event'] in [asg_event_types['terminate']]:
-            # get current dns record
-            az = message['Details']['Availability Zone']
-            instance_record_name = eval(names_map['private_instance'][private_instance_record_template])
-            resource_records_set = find_record(instance_record_name, zone_id)
-            if len(resource_records_set) == 1:
-                instance_rrs = {
-                    'Action': 'DELETE',
-                    'ResourceRecordSet': resource_records_set[0]
                 }
                 changes.append(instance_rrs)
 
