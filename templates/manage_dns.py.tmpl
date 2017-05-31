@@ -3,6 +3,7 @@
 import boto3
 import json
 import os
+from string import Template
 
 
 zone_id = '${zone_id}'
@@ -28,23 +29,26 @@ try:
 except Exception as e:
     print e
     raise
-    
-names_map = {
-    'private_instance': {
-        'service.az.domain': \"'{}.{}.{}'.format(service, az, domain)\",
-        'service-az.domain': \"'{}.{}.{}'.format(service, az, domain)\",
-        'service.instanceid.domain': \"'{}.{}.{}'.format(service, instance_id, domain)\",
-        'service-instanceid.domain': \"'{}.{}.{}'.format(service, instance_id, domain)\"
-    },
-    'private_asg': {
-        'service.domain': \"'{}.{}'.format(service, domain)\",
-        'service.internal.domain': \"'{}.internal.{}'.format(service, domain)\",
-    },
-    'public_asg': {
-        'service.domain': \"'{}.{}'.format(service, domain)\"
-    }
-}
 
+
+def generate_record_name(name_type, template, **kwargs):
+
+    names_map = {
+        'private_instance': {
+            'service.az.domain': Template('$service.$az.$domain'),
+            'service-az.domain': Template('$service-$az.$domain'),
+            'service.instanceid.domain': Template('$service.$instance_id.$domain'),
+            'service-instanceid.domain': Template('$service-$instance_id.$domain'),
+        },
+        'private_asg': {
+            'service.domain': Template('$service.$domain'),
+            'service.internal.domain': Template('$service.internal.$domain')
+        },
+        'public_asg': {
+            'service.domain': Template('$service.$domain')
+        }
+    }
+    return names_map[name_type][template].substitute(**kwargs)
 
 def lambda_handler(event, context):
 
@@ -75,7 +79,6 @@ def lambda_handler(event, context):
     asg_private_ips = [instances_metadata[i]['private_ip'] for i in instances_metadata.iterkeys()]
     print 'ASG_PRIVATE_IPS: {}'.format(json.dumps(asg_private_ips))
 
-
     # holds DNS changes to do
     changes = []
     asg_event_types = {
@@ -90,7 +93,13 @@ def lambda_handler(event, context):
             for instance_id,instance_info in instances_metadata.iteritems():
                 instance_ip = instance_info['private_ip']
                 az = instance_info['az']
-                instance_record_name = eval(names_map['private_instance'][private_instance_record_template])
+                instance_record_name = generate_record_name(
+                    'private_instance',
+                    private_instance_record_template,
+                    az=az,
+                    domain=domain,
+                    instance_id=instance_id,
+                    service=service)
 
                 instance_rrs = {
                     'Action': 'UPSERT',
@@ -106,7 +115,11 @@ def lambda_handler(event, context):
     # do we have any public IP addresses?
     if manage_public_asg_dns and len(asg_public_ips) > 0:
         # public asg group record
-        public_asg_record_name = eval(names_map['public_asg'][public_asg_record_template])
+        public_asg_record_name = generate_record_name(
+            'public_asg',
+            public_asg_record_template,
+            domain=domain,
+            service=service)
         public_rrs = {
             'Action': 'UPSERT',
             'ResourceRecordSet': {
@@ -121,7 +134,11 @@ def lambda_handler(event, context):
     #  do we have any private IPs ?
     if manage_private_asg_dns and len(asg_private_ips) > 0:
         # internal asg group record
-        private_asg_record_name = eval(names_map['private_asg'][private_asg_record_template])
+        private_asg_record_name = generate_record_name(
+            'private_asg',
+            private_asg_record_template,
+            domain=domain,
+            service=service)
         private_rrs = {
             'Action': 'UPSERT',
             'ResourceRecordSet': {
