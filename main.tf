@@ -13,7 +13,7 @@ resource "aws_lambda_function" "manage_dns" {
   source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
   function_name    = "${var.lambda_function_name}"
   role             = "${aws_iam_role.lambda_manage_dns_role.arn}"
-  handler          = "manage_dns.lambda_handler"
+  handler          = "lambda.lambda_handler"
   runtime          = "python2.7"
   timeout          = "60"
   publish          = true
