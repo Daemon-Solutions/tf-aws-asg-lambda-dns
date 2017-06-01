@@ -13,9 +13,9 @@ private_instance_record_template = os.environ['PRIVATE_INSTANCE_RECORD_TEMPLATE'
 private_asg_record_template = os.environ['PRIVATE_ASG_RECORD_TEMPLATE']
 public_asg_record_template = os.environ['PUBLIC_ASG_RECORD_TEMPLATE']
 
-manage_instance_dns = os.environ['MANAGE_INSTANCE_DNS']
-manage_private_asg_dns = os.environ['MANAGE_PRIVATE_ASG_DNS']
-manage_public_asg_dns = os.environ['MANAGE_PUBLIC_ASG_DNS']
+manage_instance_dns = os.environ['MANAGE_INSTANCE_DNS'].lower() in ["true", "1"]
+manage_private_asg_dns = os.environ['MANAGE_PRIVATE_ASG_DNS'].lower() in ["true", "1"]
+manage_public_asg_dns = os.environ['MANAGE_PUBLIC_ASG_DNS'].lower() in ["true", "1"]
 
 aws_region = os.environ.get('AWS_DEFAULT_REGION')
 r53_client = boto3.client('route53')
