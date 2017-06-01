@@ -6,16 +6,16 @@ import os
 from string import Template
 
 
-zone_id = '${zone_id}'
-service = '${service}'
+zone_id = os.environ['ZONE_ID']
+service = os.environ['SERVICE']
 
-private_instance_record_template = '${private_instance_record_template}'
-private_asg_record_template = '${private_asg_record_template}'
-public_asg_record_template = '${public_asg_record_template}'
+private_instance_record_template = os.environ['PRIVATE_INSTANCE_RECORD_TEMPLATE]'
+private_asg_record_template = os.environ['PRIVATE_ASG_RECORD_TEMPLATE']
+public_asg_record_template = os.environ['PUBLIC_ASG_RECORD_TEMPLATE']
 
-manage_instance_dns = ${manage_instance_dns}
-manage_private_asg_dns = ${manage_private_asg_dns}
-manage_public_asg_dns = ${manage_public_asg_dns}
+manage_instance_dns = os.environ['MANAGE_INSTANCE_DNS']
+manage_private_asg_dns = os.environ['MANAGE_PRIVATE_ASG_DNS']
+manage_public_asg_dns = os.environ['MANAGE_PUBLIC_ASG_DNS']
 
 aws_region = os.environ.get('AWS_DEFAULT_REGION')
 r53_client = boto3.client('route53')
@@ -35,17 +35,17 @@ def generate_record_name(name_type, template, **kwargs):
 
     names_map = {
         'private_instance': {
-            'service.az.domain': Template('\$service.\$az.\$domain'),
-            'service-az.domain': Template('\$service-\$az.\$domain'),
-            'service.instanceid.domain': Template('\$service.\$instance_id.\$domain'),
-            'service-instanceid.domain': Template('\$service-\$instance_id.\$domain'),
+            'service.az.domain': Template('$service.$az.$domain'),
+            'service-az.domain': Template('$service-$az.$domain'),
+            'service.instanceid.domain': Template('$service.$instance_id.$domain'),
+            'service-instanceid.domain': Template('$service-$instance_id.$domain'),
         },
         'private_asg': {
-            'service.domain': Template('\$service.\$domain'),
-            'service.internal.domain': Template('\$service.internal.\$domain')
+            'service.domain': Template('$service.$domain'),
+            'service.internal.domain': Template('$service.internal.$domain')
         },
         'public_asg': {
-            'service.domain': Template('\$service.\$domain')
+            'service.domain': Template('$service.$domain')
         }
     }
     return names_map[name_type][template].substitute(**kwargs)
