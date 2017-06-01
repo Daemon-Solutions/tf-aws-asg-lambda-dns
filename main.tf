@@ -9,7 +9,6 @@ data "archive_file" "lambda_package" {
 
 ## create lambda function
 resource "aws_lambda_function" "manage_dns" {
-  depends_on       = ["aws_s3_bucket_object.upload_lambda_package"]
   filename         = "${path.module}/include/lambda.zip"
   source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
   function_name    = "${var.lambda_function_name}"
