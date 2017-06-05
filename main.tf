@@ -18,6 +18,10 @@ resource "aws_lambda_function" "manage_dns" {
   timeout          = "60"
   publish          = true
 
+  lifecycle {
+    ignore_changes = ["filename"]
+  }
+
   environment {
     variables = {
       ZONE_ID                          = "${var.zone_id}"
