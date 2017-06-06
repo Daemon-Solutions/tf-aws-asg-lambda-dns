@@ -44,6 +44,7 @@ def generate_record_name(name_type, template, **kwargs):
         'private_instance': {
             'service.az.domain': Template('$service.$az.$domain'),
             'service-az.domain': Template('$service-$az.$domain'),
+            'service-region.domain': Template('$service-$region.$domain'),
             'service.instanceid.domain': Template('$service.$instance_id.$domain'),
             'service-instanceid.domain': Template('$service-$instance_id.$domain'),
         },
@@ -105,6 +106,7 @@ def lambda_handler(event, context):
                     'private_instance',
                     private_instance_record_template,
                     az=az,
+                    region=aws_region,
                     domain=domain,
                     instance_id=instance_id,
                     service=service)
