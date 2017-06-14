@@ -4,12 +4,12 @@
 data "archive_file" "lambda_package" {
   type        = "zip"
   source_file = "${path.module}/include/lambda.py"
-  output_path = "${path.module}/include/lambda.zip"
+  output_path = "${path.cwd}/.terraform/lambda.zip"
 }
 
 ## create lambda function
 resource "aws_lambda_function" "manage_dns" {
-  filename         = "${path.module}/include/lambda.zip"
+  filename         = "./.terraform/lambda.zip"
   source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
   function_name    = "${var.lambda_function_name}"
   role             = "${aws_iam_role.lambda_manage_dns_role.arn}"
@@ -17,10 +17,6 @@ resource "aws_lambda_function" "manage_dns" {
   runtime          = "python2.7"
   timeout          = "60"
   publish          = true
-
-  lifecycle {
-    ignore_changes = ["filename"]
-  }
 
   environment {
     variables = {
