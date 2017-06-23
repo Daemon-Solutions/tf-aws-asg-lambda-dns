@@ -1,12 +1,4 @@
-variable "aws_region" {
-  default = "eu-west-1"
-}
-
 variable "lambda_function_name" {}
-
-variable "lambda_version" {
-  description = "Version for lambda function"
-}
 
 variable "zone_id" {
   description = "Id of a zone file to add records to"

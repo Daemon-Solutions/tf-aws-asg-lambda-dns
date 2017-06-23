@@ -18,7 +18,6 @@ module "dnsmagic" {
     manage_instance_dns = true
     private_instance_record_template = "service.instanceid.domain"
     manage_private_asg_dns = true
-    lambda_version = "v0.3"
 }
 ```
 
