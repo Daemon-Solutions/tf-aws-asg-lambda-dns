@@ -4,8 +4,9 @@ variable "zone_id" {
   description = "Id of a zone file to add records to"
 }
 
-variable "asg_name" {
-  description = "Name of AutoscalingGroup to attach this Lambda function to"
+variable "asg_names" {
+  description = "Name of AutoscalingGroups to attach this Lambda function to"
+  type = "list"
 }
 
 variable "sns_topic_name" {
