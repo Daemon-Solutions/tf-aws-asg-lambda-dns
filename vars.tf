@@ -6,7 +6,7 @@ variable "zone_id" {
 
 variable "asg_names" {
   description = "Name of AutoscalingGroups to attach this Lambda function to"
-  type = "list"
+  type        = "list"
 }
 
 variable "sns_topic_name" {
@@ -18,17 +18,17 @@ variable "service" {
 }
 
 variable "private_instance_record_template" {
-  description = "What should instance's private DNS record look like, choices are: 'service(.|-)az.domain' (ex: bastion.eu-west-1a.domain.tld) or 'service(.|-)instanceid.domain' (ex: web-i-0a3c65796c57c68d3.domain.tld)"
+  description = "What should instance's private DNS record look like"
   default     = "service.az.domain"
 }
 
 variable "private_asg_record_template" {
-  description = "What should asg's private DNS record look like, choices are: 'service.internal.domain' (ex: bastion.internal.domain.tld) and 'service.domain' (ex: bastion.domain.tld)"
+  description = "What should asg's private DNS record look like"
   default     = "service.internal.domain"
 }
 
 variable "public_asg_record_template" {
-  description = "What should asg's public DNS record look like, choices are: 'service.domain' (ex: bastion.domain.tld)"
+  description = "What should asg's public DNS record look like"
   default     = "service.domain"
 }
 
