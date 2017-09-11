@@ -31,7 +31,7 @@ except Exception as e:
     raise
 
 
-def generate_record_name(name_type, template, **kwargs):
+def generate_record_name(template, **kwargs):
     """
     generate Resource Record name
     :param template: string
@@ -91,20 +91,22 @@ def lambda_handler(event, context):
         'test': 'autoscaling:TEST_NOTIFICATION',
     }
 
+    def generated_record(template):
+        return generate_record_name(template,
+                                    az=az,
+                                    region=aws_region,
+                                    domain=domain,
+                                    instance_id=instance_id,
+                                    service=service
+                )
+
     if manage_instance_dns:
         # instance has been launched or asg created
         if instances_metadata:
             for instance_id, instance_info in instances_metadata.iteritems():
                 instance_ip = instance_info['private_ip']
                 az = instance_info['az']
-                instance_record_name = generate_record_name(
-                    private_instance_record_template,
-                    az=az,
-                    region=aws_region,
-                    domain=domain,
-                    instance_id=instance_id,
-                    service=service)
-
+                instance_record_name = generated_record(private_instance_record_template)
                 instance_rrs = {
                     'Action': 'UPSERT',
                     'ResourceRecordSet': {
@@ -119,10 +121,7 @@ def lambda_handler(event, context):
     # do we have any public IP addresses?
     if manage_public_asg_dns and len(asg_public_ips) > 0:
         # public asg group record
-        public_asg_record_name = generate_record_name(
-            public_asg_record_template,
-            domain=domain,
-            service=service)
+        public_asg_record_name = generated_record(public_asg_record_template)
         public_rrs = {
             'Action': 'UPSERT',
             'ResourceRecordSet': {
@@ -138,10 +137,7 @@ def lambda_handler(event, context):
     #  do we have any private IPs ?
     if manage_private_asg_dns and len(asg_private_ips) > 0:
         # internal asg group record
-        private_asg_record_name = generate_record_name(
-            private_asg_record_template,
-            domain=domain,
-            service=service)
+        private_asg_record_name = generated_record(private_asg_record_template)
         private_rrs = {
             'Action': 'UPSERT',
             'ResourceRecordSet': {
