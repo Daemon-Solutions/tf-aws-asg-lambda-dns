@@ -31,32 +31,27 @@ except Exception as e:
     raise
 
 
-def generate_record_name(name_type, template, **kwargs):
+def generate_record_name(template, **kwargs):
     """
     generate Resource Record name
-    :param name_type: string
     :param template: string
     :param kwargs: other arguments: service, az, instance_id, domain
     :return: string.Template
     """
 
     names_map = {
-        'private_instance': {
-            'service.az.domain': Template('$service.$az.$domain'),
-            'service-az.domain': Template('$service-$az.$domain'),
-            'service-region.domain': Template('$service-$region.$domain'),
-            'service.instanceid.domain': Template('$service.$instance_id.$domain'),
-            'service-instanceid.domain': Template('$service-$instance_id.$domain'),
-        },
-        'private_asg': {
-            'service.domain': Template('$service.$domain'),
-            'service.internal.domain': Template('$service.internal.$domain')
-        },
-        'public_asg': {
-            'service.domain': Template('$service.$domain')
-        }
+        'service.domain': Template('$service.$domain'),
+        'service.az.domain': Template('$service.$az.$domain'),
+        'service-az.domain': Template('$service-$az.$domain'),
+        'service.instanceid.domain': Template('$service.$instance_id.$domain'),
+        'service-instanceid.domain': Template('$service-$instance_id.$domain'),
+        'service.internal.domain': Template('$service.internal.$domain'),
+        'service-internal.domain': Template('$service-internal.$domain'),
+        'service.region.domain': Template('$service.$region.$domain'),
+        'service-region.domain': Template('$service-$region.$domain'),
     }
-    return names_map[name_type][template].substitute(**kwargs)
+
+    return names_map[template].substitute(**kwargs)
 
 
 def lambda_handler(event, context):
@@ -103,7 +98,6 @@ def lambda_handler(event, context):
                 instance_ip = instance_info['private_ip']
                 az = instance_info['az']
                 instance_record_name = generate_record_name(
-                    'private_instance',
                     private_instance_record_template,
                     az=az,
                     region=aws_region,
@@ -126,9 +120,9 @@ def lambda_handler(event, context):
     if manage_public_asg_dns and len(asg_public_ips) > 0:
         # public asg group record
         public_asg_record_name = generate_record_name(
-            'public_asg',
             public_asg_record_template,
             domain=domain,
+            region=aws_region,
             service=service)
         public_rrs = {
             'Action': 'UPSERT',
@@ -146,9 +140,9 @@ def lambda_handler(event, context):
     if manage_private_asg_dns and len(asg_private_ips) > 0:
         # internal asg group record
         private_asg_record_name = generate_record_name(
-            'private_asg',
             private_asg_record_template,
             domain=domain,
+            region=aws_region,
             service=service)
         private_rrs = {
             'Action': 'UPSERT',

@@ -1,12 +1,26 @@
 tf-aws-asg-lambda-dns
 ===============================
 
-Route53 support for ASG instances
+Route53 support for ASG instances.
+
+Valid record templates are:
+- service.domain
+- service.az.domain
+- service-az.domain
+- service.instanceid.domain
+- service-instanceid.domain
+- service.internal.domain
+- service-internal.domain
+- service.region.domain
+- service-region.domain
+
+Note that templates containing `az` or `instanceid` are not available for `ASG` type records ( `private_asg_record_template` and `public_asg_record_template`).
+
 
 Usage
 -----
 
-```js 
+```js
 
 module "dnsmagic" {
     source = "../modules/tf-aws-asg-lambda-dns/"
