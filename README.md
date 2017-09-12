@@ -14,6 +14,8 @@ Valid record templates are:
 - service.region.domain
 - service-region.domain
 
+Note that templates containing `az` or `instanceid` are not available for `ASG` type records ( `private_asg_record_template` and `public_asg_record_template`).
+
 
 Usage
 -----
