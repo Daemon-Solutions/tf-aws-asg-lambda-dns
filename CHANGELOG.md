@@ -1,3 +1,8 @@
+## 1.4.0 (November 9, 2017)
+
+BUG FIXES:
+* Changed IAM role name to be a prefix so multiple versions of the same service can run in the same region
+
 ## 1.3.0 (September 12, 2017)
 
 IMPROVEMENTS:
@@ -68,4 +73,3 @@ BUG FIXES:
 ## 0.1.0 (April 26, 2017)
 
 Initial version
-
