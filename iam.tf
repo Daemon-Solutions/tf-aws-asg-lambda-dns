@@ -61,7 +61,7 @@ EOF
 
 # Lambda role
 resource "aws_iam_role" "lambda_manage_dns_role" {
-  name = "${var.service}_lambda_manage_dns_role"
+  name_prefix = "${var.service}_lambda_manage_dns_role"
 
   assume_role_policy = <<EOF
 {
