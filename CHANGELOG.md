@@ -1,3 +1,8 @@
+## 1.4.1 (November 10, 2017)
+
+BUG FIXES:
+* Reduced the boilerplate prefix as it cannot be longer than 32 characters
+
 ## 1.4.0 (November 9, 2017)
 
 BUG FIXES:
