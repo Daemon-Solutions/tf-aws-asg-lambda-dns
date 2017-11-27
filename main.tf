@@ -16,7 +16,6 @@ resource "aws_lambda_function" "manage_dns" {
   handler          = "lambda.lambda_handler"
   runtime          = "python2.7"
   timeout          = "60"
-  publish          = true
 
   environment {
     variables = {
@@ -29,5 +28,21 @@ resource "aws_lambda_function" "manage_dns" {
       MANAGE_PRIVATE_ASG_DNS           = "${var.manage_private_asg_dns ? "True" : "False"}"
       MANAGE_PUBLIC_ASG_DNS            = "${var.manage_public_asg_dns ? "True" : "False"}"
     }
+  }
+}
+
+resource "null_resource" "notify_sns_topic" {
+  count = "${length(var.asg_names)}"
+
+  triggers {
+    zone_id                          = "${var.zone_id}"
+    service                          = "${var.service}"
+    private_instance_record_template = "${var.private_instance_record_template}"
+    private_asg_record_template      = "${var.private_asg_record_template}"
+    public_asg_record_template       = "${var.public_asg_record_template}"
+  }
+
+  provisioner "local-exec" {
+    command = "python ${path.module}/include/publish.py ${data.aws_region.current.name} ${element(var.asg_names, count.index)} ${aws_sns_topic.manage_dns_asg_sns.arn}"
   }
 }
