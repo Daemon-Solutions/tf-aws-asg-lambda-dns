@@ -32,7 +32,8 @@ resource "aws_lambda_function" "manage_dns" {
 }
 
 resource "null_resource" "notify_sns_topic" {
-  count = "${length(var.asg_names)}"
+  depends_on = ["aws_lambda_function.manage_dns"]
+  count      = "${length(var.asg_names)}"
 
   triggers {
     zone_id                          = "${var.zone_id}"
