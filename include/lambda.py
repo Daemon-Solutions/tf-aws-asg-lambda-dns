@@ -43,6 +43,8 @@ def generate_record_name(template, **kwargs):
         'service.domain': Template('$service.$domain'),
         'service.az.domain': Template('$service.$az.$domain'),
         'service-az.domain': Template('$service-$az.$domain'),
+        'service.az_short.domain': Template('$service.$az_short.$domain'),
+        'service-az_short.domain': Template('$service-$az_short.$domain'),
         'service.instanceid.domain': Template('$service.$instance_id.$domain'),
         'service-instanceid.domain': Template('$service-$instance_id.$domain'),
         'service.internal.domain': Template('$service.internal.$domain'),
@@ -97,9 +99,11 @@ def lambda_handler(event, context):
             for instance_id, instance_info in instances_metadata.iteritems():
                 instance_ip = instance_info['private_ip']
                 az = instance_info['az']
+                az_short = az.split('-')[-1]
                 instance_record_name = generate_record_name(
                     private_instance_record_template,
                     az=az,
+                    az_short=az_short,
                     region=aws_region,
                     domain=domain,
                     instance_id=instance_id,
