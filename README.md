@@ -7,6 +7,8 @@ Valid record templates are:
 - service.domain
 - service.az.domain
 - service-az.domain
+- service.az_short.domain
+- service-az_short.domain
 - service.instanceid.domain
 - service-instanceid.domain
 - service.internal.domain
@@ -14,7 +16,7 @@ Valid record templates are:
 - service.region.domain
 - service-region.domain
 
-Note that templates containing `az` or `instanceid` are not available for `ASG` type records ( `private_asg_record_template` and `public_asg_record_template`).
+Note that templates containing `az`, `az_short` or `instanceid` are not available for `ASG` type records ( `private_asg_record_template` and `public_asg_record_template`).
 
 
 Usage
