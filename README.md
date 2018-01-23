@@ -11,6 +11,7 @@ Valid record templates are:
 - service-az_short.domain
 - service.instanceid.domain
 - service-instanceid.domain
+- service.internal.region.domain
 - service.internal.domain
 - service-internal.domain
 - service.region.domain

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 import boto3
 import json
@@ -48,6 +48,7 @@ def generate_record_name(template, **kwargs):
         'service.instanceid.domain': Template('$service.$instance_id.$domain'),
         'service-instanceid.domain': Template('$service-$instance_id.$domain'),
         'service.internal.domain': Template('$service.internal.$domain'),
+        'service.internal.region.domain': Template('$service.internal.$region.$domain'),
         'service-internal.domain': Template('$service-internal.$domain'),
         'service.region.domain': Template('$service.$region.$domain'),
         'service-region.domain': Template('$service-$region.$domain'),
