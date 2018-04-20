@@ -65,11 +65,12 @@ def lambda_handler(event, context):
     print 'Message: {}'.format(json.dumps(message))
     print 'Metadata: {}'.format(json.dumps(metadata))
 
-    # asg name
+    # asg name and event
     asg_name = message['AutoScalingGroupName']
+    asg_event = message['Event']
 
     # get metadata of all instances in ASG
-    instances_metadata = get_asg_instances(asg_name)
+    instances_metadata = get_asg_instances(asg_name, asg_event, message)
     print 'ASG INSTANCES: {}'.format(json.dumps(instances_metadata))
 
     # create a list of public addresses of all instances in ASG
@@ -242,7 +243,7 @@ def get_instance_metadata(instance_id):
     return metadata
 
 
-def get_asg_instances(asg_name):
+def get_asg_instances(asg_name, asg_event, message):
     """
     :param asg_name: string
     :return: dict of dicts with keys being instance IDs and values
@@ -253,6 +254,13 @@ def get_asg_instances(asg_name):
     # get instances IDs
     asg_instances = [i['InstanceId']
                      for i in asg['AutoScalingGroups'][0]['Instances']]
+
+    # ensure launching instance is found in the asg
+    if asg_event == "autoscaling:EC2_INSTANCE_LAUNCH":
+        ec2_instance = message['EC2InstanceId']
+        if ec2_instance not in asg_instances:
+            raise Exception('Launched instance not found in asg')
+
     return_value = {}
     for instance in asg_instances:
         metadata = get_instance_metadata(instance)
