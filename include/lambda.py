@@ -256,6 +256,7 @@ def get_asg_instances(asg_name, asg_event, message):
                      for i in asg['AutoScalingGroups'][0]['Instances']]
 
     # ensure launching instance is found in the asg
+    ec2_instance = ""
     if asg_event == "autoscaling:EC2_INSTANCE_LAUNCH":
         ec2_instance = message['EC2InstanceId']
         if ec2_instance not in asg_instances:
@@ -267,5 +268,7 @@ def get_asg_instances(asg_name, asg_event, message):
         if metadata:
             return_value[instance] = metadata
         else:
-            continue
+            # ensure metadata is found for launching instance
+            if instance == ec2_instance and asg_event == "autoscaling:EC2_INSTANCE_LAUNCH":
+                raise Exception('No metadata returned for ' + instance)
     return return_value
