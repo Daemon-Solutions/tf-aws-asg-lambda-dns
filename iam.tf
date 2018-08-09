@@ -84,6 +84,7 @@ EOF
 }
 
 resource "aws_lambda_permission" "manage_dns_asg_sns" {
+  count = "${var.is_enabled}"
   statement_id  = "AllowExecutionFromSNS"
   action        = "lambda:InvokeFunction"
   function_name = "${aws_lambda_function.manage_dns.arn}"
