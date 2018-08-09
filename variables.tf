@@ -1,3 +1,9 @@
+variable "is_enabled" {
+  description = "Flag used to determine wether the resources should be created"
+  type        = "string"
+  default     = "1"
+}
+
 variable "lambda_function_name" {
   description = "The name of the Lambda Function to create, which will manage the Autoscaling Groups"
   type = "string"

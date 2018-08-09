@@ -9,6 +9,7 @@ data "archive_file" "lambda_package" {
 
 ## create lambda function
 resource "aws_lambda_function" "manage_dns" {
+  count = "${var.is_enabled}"
   filename         = "./.terraform/tf-aws-asg-lambda-dns-${md5(file("${path.module}/include/lambda.py"))}.zip"
   source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
   function_name    = "${var.lambda_function_name}"

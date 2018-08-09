@@ -1,5 +1,6 @@
 # Lambda policy for logging
 resource "aws_iam_role_policy" "lambda_manage_dns_logging_policy" {
+  count = "${var.is_enabled}"
   name = "${var.service}_lambda_dns_logging_policy"
   role = "${aws_iam_role.lambda_manage_dns_role.id}"
 
@@ -23,6 +24,7 @@ EOF
 
 # Lambda policy for managing dns
 resource "aws_iam_role_policy" "lambda_manage_dns_policy" {
+  count = "${var.is_enabled}"
   name = "${var.service}_lambda_route53_policy"
   role = "${aws_iam_role.lambda_manage_dns_role.id}"
 
@@ -61,6 +63,7 @@ EOF
 
 # Lambda role
 resource "aws_iam_role" "lambda_manage_dns_role" {
+  count = "${var.is_enabled}"
   name_prefix = "${var.service}_lambda_dns"
 
   assume_role_policy = <<EOF

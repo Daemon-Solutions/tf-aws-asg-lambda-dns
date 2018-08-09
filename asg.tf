@@ -1,5 +1,6 @@
 # ASG notification
 resource "aws_autoscaling_notification" "manage_dns_asg_notification" {
+  count = "${var.is_enabled}"
   group_names = [
     "${var.asg_names}",
   ]
