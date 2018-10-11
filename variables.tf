@@ -1,11 +1,11 @@
 variable "lambda_function_name" {
   description = "The name of the Lambda Function to create, which will manage the Autoscaling Groups"
-  type = "string"
+  type        = "string"
 }
 
 variable "zone_id" {
   description = "Id of a zone file to add records to"
-  type = "string"
+  type        = "string"
 }
 
 variable "asg_names" {
@@ -13,14 +13,19 @@ variable "asg_names" {
   type        = "list"
 }
 
+variable "asg_count" {
+  description = "Number of the Autoscaling Groups defined in asg_names variable. Only here because count cannot be computed"
+  default     = 1
+}
+
 variable "sns_topic_name" {
   description = "Name for the SNS topic which will handle notifications of instance launch and terminate events"
-  type = "string"
+  type        = "string"
 }
 
 variable "service" {
   description = "Autoscaling Group service name, e.g. 'bastion'. This will be prefix for DNS records."
-  type = "string"
+  type        = "string"
 }
 
 variable "private_instance_record_template" {
