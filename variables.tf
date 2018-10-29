@@ -57,3 +57,8 @@ variable "manage_public_asg_dns" {
   description = "Whether to manage DNS records for public Autoscaling Group instances"
   default     = false
 }
+
+variable "ttl" {
+  description = "TTL value for the DNS record(s)"
+  default     = 60
+}

@@ -8,6 +8,7 @@ from string import Template
 
 zone_id = os.environ['ZONE_ID']
 service = os.environ['SERVICE']
+ttl = int(os.environ['TTL'])
 
 private_instance_record_template = os.environ['PRIVATE_INSTANCE_RECORD_TEMPLATE']
 private_asg_record_template = os.environ['PRIVATE_ASG_RECORD_TEMPLATE']
@@ -116,7 +117,7 @@ def lambda_handler(event, context):
                     'ResourceRecordSet': {
                         'Name': instance_record_name,
                         'Type': 'A',
-                        'TTL': 60,
+                        'TTL': ttl,
                         'ResourceRecords': [{'Value': instance_ip}]
                     }
                 }
@@ -135,7 +136,7 @@ def lambda_handler(event, context):
             'ResourceRecordSet': {
                 'Name': public_asg_record_name,
                 'Type': 'A',
-                'TTL': 60,
+                'TTL': ttl,
                 'ResourceRecords': [{'Value': pub_ip}
                                     for pub_ip in asg_public_ips]
             }
@@ -155,7 +156,7 @@ def lambda_handler(event, context):
             'ResourceRecordSet': {
                 'Name': private_asg_record_name,
                 'Type': 'A',
-                'TTL': 60,
+                'TTL': ttl,
                 'ResourceRecords': [{'Value': priv_ip}
                                     for priv_ip in asg_private_ips]
             }

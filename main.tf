@@ -27,6 +27,7 @@ resource "aws_lambda_function" "manage_dns" {
       MANAGE_INSTANCE_DNS              = "${var.manage_instance_dns ? "True" : "False"}"
       MANAGE_PRIVATE_ASG_DNS           = "${var.manage_private_asg_dns ? "True" : "False"}"
       MANAGE_PUBLIC_ASG_DNS            = "${var.manage_public_asg_dns ? "True" : "False"}"
+      TTL                              = "${var.ttl}"
     }
   }
 }
