@@ -12,7 +12,7 @@ data "archive_file" "lambda_package" {
 resource "aws_lambda_function" "manage_dns" {
   count            = "${var.enabled ? 1 : 0}"
   filename         = "./.terraform/tf-aws-asg-lambda-dns-${md5(file("${path.module}/include/lambda.py"))}.zip"
-  source_code_hash = "${join("", data.archive_file.lambda_package.output_base64sha256)}"
+  source_code_hash = "${join("", data.archive_file.lambda_package.*.output_base64sha256)}"
   function_name    = "${var.lambda_function_name}"
   role             = "${join("", aws_iam_role.lambda_manage_dns_role.*.arn)}"
   handler          = "lambda.lambda_handler"
