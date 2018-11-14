@@ -2,6 +2,7 @@
 
 ## create lambda package
 data "archive_file" "lambda_package" {
+  count       = "${var.enabled ? 1 : 0}"
   type        = "zip"
   source_file = "${path.module}/include/lambda.py"
   output_path = "${path.cwd}/.terraform/tf-aws-asg-lambda-dns-${md5(file("${path.module}/include/lambda.py"))}.zip"
@@ -9,10 +10,11 @@ data "archive_file" "lambda_package" {
 
 ## create lambda function
 resource "aws_lambda_function" "manage_dns" {
+  count            = "${var.enabled ? 1 : 0}"
   filename         = "./.terraform/tf-aws-asg-lambda-dns-${md5(file("${path.module}/include/lambda.py"))}.zip"
-  source_code_hash = "${data.archive_file.lambda_package.output_base64sha256}"
+  source_code_hash = "${join("", data.archive_file.lambda_package.output_base64sha256)}"
   function_name    = "${var.lambda_function_name}"
-  role             = "${aws_iam_role.lambda_manage_dns_role.arn}"
+  role             = "${join("", aws_iam_role.lambda_manage_dns_role.*.arn)}"
   handler          = "lambda.lambda_handler"
   runtime          = "python2.7"
   timeout          = "60"
@@ -34,7 +36,7 @@ resource "aws_lambda_function" "manage_dns" {
 
 resource "null_resource" "notify_sns_topic" {
   depends_on = ["aws_lambda_function.manage_dns"]
-  count      = "${var.asg_count}"
+  count      = "${var.asg_count && var.enabled ? 1 : 0}"
 
   triggers {
     zone_id                          = "${var.zone_id}"

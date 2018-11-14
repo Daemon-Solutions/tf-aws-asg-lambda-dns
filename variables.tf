@@ -1,3 +1,9 @@
+variable "enabled" {
+  description = "Enable or disable the Lambda DNS functionality."
+  type        = "string"
+  default     = "1"
+}
+
 variable "lambda_function_name" {
   description = "The name of the Lambda Function to create, which will manage the Autoscaling Groups"
   type        = "string"

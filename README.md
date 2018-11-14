@@ -26,6 +26,7 @@ Usage
 ```js
 
 module "dnsmagic" {
+  enabled                          = "0"
   source                           = "../modules/tf-aws-asg-lambda-dns/"
   zone_id                          = "Z2FA3UHII7N4VI"
   asg_names                        = ["${aws_autoscaling_group.bar.name}"]
@@ -49,4 +50,4 @@ See [variables file](vars.tf)
 Outputs
 -------
 
-See [optputs file](outputs.tf)
+See [outputs file](outputs.tf)
