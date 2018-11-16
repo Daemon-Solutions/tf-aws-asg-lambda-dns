@@ -9,7 +9,7 @@ resource "aws_sns_topic" "manage_dns_asg_sns" {
 resource "aws_sns_topic_subscription" "sns_topic_subscription" {
   count = "${var.enabled ? 1 : 0}"
 
-  topic_arn = "${aws_sns_topic.manage_dns_asg_sns.arn}"
+  topic_arn = "${join("", aws_sns_topic.manage_dns_asg_sns.*.arn)}"
   protocol  = "lambda"
-  endpoint  = "${aws_lambda_function.manage_dns.arn}"
+  endpoint  = "${join("", aws_lambda_function.manage_dns.*.arn)}"
 }
