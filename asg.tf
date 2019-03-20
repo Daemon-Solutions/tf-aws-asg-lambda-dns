@@ -1,7 +1,5 @@
 # ASG notification
 resource "aws_autoscaling_notification" "manage_dns_asg_notification" {
-  count = "${var.enabled ? 1 : 0}"
-
   group_names = [
     "${var.asg_names}",
   ]
@@ -12,5 +10,5 @@ resource "aws_autoscaling_notification" "manage_dns_asg_notification" {
     "autoscaling:EC2_INSTANCE_TERMINATE",
   ]
 
-  topic_arn = "${join("", aws_sns_topic.manage_dns_asg_sns.*.arn)}"
+  topic_arn = "${aws_sns_topic.dns.arn}"
 }
