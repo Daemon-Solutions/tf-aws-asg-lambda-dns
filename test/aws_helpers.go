@@ -2,6 +2,7 @@ package test
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,12 +12,16 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// AsgInstancesInfo Contains info for ASG instances
-type AsgInstancesInfo struct {
+// AsgInstanceInfo Contains info for ASG instances
+type AsgInstanceInfo struct {
 	InstanceID string
 	PrivateIP  string
 	PublicIP   string
 	AZ         string
+	AZShort    string
+	Region     string
+	Service    string
+	Domain     string
 }
 
 // AzForEc2InstanceNotFound error when couldnt get AZ for EC2 instance
@@ -25,26 +30,35 @@ type AzForEc2InstanceNotFound struct {
 	AwsRegion  string
 }
 
-// Get the IP address of ASG EC2 Instances in the given region
-func getAsgInstancesInfo(t *testing.T, asgName string, awsRegion string) []AsgInstancesInfo {
+// Gather info about ASG EC2 Instances in the given region
+func getAsgInstancesInfo(t *testing.T, asgName string, awsRegion string, service string, domain string) []AsgInstanceInfo {
 	instanceIds := tfaws.GetInstanceIdsForAsg(t, asgName, awsRegion)
 
 	if len(instanceIds) == 0 {
 		t.Fatalf("Could not find any instances in ASG %s in %s", asgName, awsRegion)
 	}
 
-	instances := []AsgInstancesInfo{}
+	instances := []AsgInstanceInfo{}
+
 	for _, instanceID := range instanceIds {
+		az := getAvailabilityZoneOfEc2Instance(t, instanceID, awsRegion)
+		azSplit := strings.Split(az, "-")
+		azShort := azSplit[len(azSplit)-1]
 		instances = append(
 			instances,
-			AsgInstancesInfo{
+			AsgInstanceInfo{
 				InstanceID: instanceID,
 				PrivateIP:  tfaws.GetPrivateIpOfEc2Instance(t, instanceID, awsRegion),
 				PublicIP:   tfaws.GetPublicIpOfEc2Instance(t, instanceID, awsRegion),
-				AZ:         getAvailabilityZoneOfEc2Instance(t, instanceID, awsRegion),
+				AZ:         az,
+				AZShort:    azShort,
+				Region:     awsRegion,
+				Service:    service,
+				Domain:     domain,
 			},
 		)
 	}
+
 	return instances
 }
 

@@ -27,7 +27,7 @@ resource "random_string" "random" {
 
 module "vpc" {
   source             = "terraform-aws-modules/vpc/aws"
-  name               = "terraform-aws-asg-dns"
+  name               = "terraform-aws-asg-dns-${random_string.random.result}"
   cidr               = "10.0.0.0/24"
   azs                = "${data.aws_availability_zones.available.names}"
   public_subnets     = ["10.0.0.0/26", "10.0.0.64/26", "10.0.0.128/26"]
@@ -37,16 +37,16 @@ module "vpc" {
 
 resource "aws_launch_configuration" "lc" {
   associate_public_ip_address = true
-  name                        = "terraform-aws-asg-dns"
+  name                        = "terraform-aws-asg-dns-${random_string.random.result}"
   image_id                    = "${data.aws_ami.ami.image_id}"
   instance_type               = "t2.micro"
 }
 
 resource "aws_autoscaling_group" "asg" {
   vpc_zone_identifier       = ["${module.vpc.public_subnets}"]
-  name                      = "terraform-aws-asg-dns"
-  max_size                  = 3
-  min_size                  = 3
+  name                      = "terraform-aws-asg-dns-${random_string.random.result}"
+  max_size                  = "${var.asg_size}"
+  min_size                  = 1
   health_check_grace_period = 300
   health_check_type         = "ELB"
   launch_configuration      = "${aws_launch_configuration.lc.name}"

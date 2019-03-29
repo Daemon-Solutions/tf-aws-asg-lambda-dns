@@ -35,3 +35,7 @@ variable "ttl" {
 variable "aws_region" {
   default = "eu-west-1"
 }
+
+variable "asg_size" {
+  default = 1
+}
