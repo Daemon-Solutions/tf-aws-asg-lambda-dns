@@ -43,6 +43,10 @@ resource "null_resource" "notify_sns_topic" {
     private_instance_record_template = "${var.private_instance_record_template}"
     private_asg_record_template      = "${var.private_asg_record_template}"
     public_asg_record_template       = "${var.public_asg_record_template}"
+    manage_instance_dns              = "${var.manage_instance_dns}"
+    manage_private_asg_dns           = "${var.manage_private_asg_dns}"
+    manage_public_asg_dns            = "${var.manage_public_asg_dns}"
+    ttl                              = "${var.ttl}"
   }
 
   provisioner "local-exec" {
