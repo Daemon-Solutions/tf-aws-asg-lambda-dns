@@ -13,6 +13,7 @@ module "lambda" {
   environment {
     variables {
       ZONE_ID                          = "${var.zone_id}"
+      DNS_ROLE_ARN                     = "${var.dns_role_arn}"
       SERVICE                          = "${var.service}"
       PRIVATE_INSTANCE_RECORD_TEMPLATE = "${var.private_instance_record_template}"
       PRIVATE_ASG_RECORD_TEMPLATE      = "${var.private_asg_record_template}"
@@ -39,6 +40,7 @@ resource "null_resource" "notify_sns_topic" {
   triggers {
     lambda_arn                       = "${module.lambda.function_arn}"
     zone_id                          = "${var.zone_id}"
+    dns_role_arn                     = "${var.dns_role_arn}"
     service                          = "${var.service}"
     private_instance_record_template = "${var.private_instance_record_template}"
     private_asg_record_template      = "${var.private_asg_record_template}"

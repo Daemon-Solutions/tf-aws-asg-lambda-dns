@@ -32,4 +32,14 @@ data "aws_iam_policy_document" "lambda" {
       "*",
     ]
   }
+
+  statement {
+    actions = [
+      "sts:AssumeRole",
+    ]
+
+    resources = [
+      "*",
+    ]
+  }
 }

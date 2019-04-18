@@ -8,6 +8,12 @@ variable "zone_id" {
   type        = "string"
 }
 
+variable "dns_role_arn" {
+  description = "ARN of a role to assume to manage DNS records. Useful if DNS zone is in different account"
+  type        = "string"
+  default     = ""
+}
+
 variable "asg_names" {
   description = "The Autoscaling Group names to attach to this Lambda Function"
   type        = "list"
