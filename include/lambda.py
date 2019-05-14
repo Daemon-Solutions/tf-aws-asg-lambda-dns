@@ -82,7 +82,7 @@ def change_rrs(changes, zoneid, r53_client):
     :param zoneid: string
     :return: response dict
     """
-    print 'Performing change {}'.format(json.dumps(changes))
+    print('Performing change {}'.format(json.dumps(changes)))
     response = r53_client.change_resource_record_sets(
         HostedZoneId='/hostedzone/{}'.format(zoneid),
         ChangeBatch={
@@ -100,7 +100,7 @@ def parse_event(event):
     """
     metadata = {}
     message = json.loads(event['Records'][0]['Sns']['Message'])
-    if 'NotificationMetadata' in message.keys():
+    if 'NotificationMetadata' in list(message.keys()):
         metadata = json.loads(message['NotificationMetadata'])
     return message, metadata
 
@@ -172,9 +172,9 @@ def lambda_handler(event, context):
     # parse event
     message, metadata = parse_event(event)
 
-    print 'Received event: {}'.format(json.dumps(event))
-    print 'Message: {}'.format(json.dumps(message))
-    print 'Metadata: {}'.format(json.dumps(metadata))
+    print('Received event: {}'.format(json.dumps(event)))
+    print('Message: {}'.format(json.dumps(message)))
+    print('Metadata: {}'.format(json.dumps(metadata)))
 
     # asg name and event
     asg_name = message['AutoScalingGroupName']
@@ -182,21 +182,21 @@ def lambda_handler(event, context):
 
     # get metadata of all instances in ASG
     instances_metadata = get_asg_instances(asg_name, asg_event, message)
-    print 'ASG INSTANCES: {}'.format(json.dumps(instances_metadata))
+    print('ASG INSTANCES: {}'.format(json.dumps(instances_metadata)))
 
     # create a list of public addresses of all instances in ASG
     asg_public_ips = []
-    for _metadata in instances_metadata.itervalues():
+    for _metadata in instances_metadata.values():
         if _metadata['public_ip'] is not None:
             asg_public_ips.append(_metadata['public_ip'])
         else:
             continue
-    print 'ASG_PUBLIC_IPS: {}'.format(json.dumps(asg_public_ips))
+    print('ASG_PUBLIC_IPS: {}'.format(json.dumps(asg_public_ips)))
 
     # create a list of private addresses of asg instances
     asg_private_ips = [instances_metadata[i]['private_ip']
-                       for i in instances_metadata.iterkeys()]
-    print 'ASG_PRIVATE_IPS: {}'.format(json.dumps(asg_private_ips))
+                       for i in instances_metadata.keys()]
+    print('ASG_PRIVATE_IPS: {}'.format(json.dumps(asg_private_ips)))
 
     # holds DNS changes to do
     changes = []
@@ -204,7 +204,7 @@ def lambda_handler(event, context):
     if manage_instance_dns:
         # instance has been launched or asg created
         if instances_metadata:
-            for instance_id, instance_info in instances_metadata.iteritems():
+            for instance_id, instance_info in instances_metadata.items():
                 instance_ip = instance_info['private_ip']
                 az = instance_info['az']
                 az_short = az.split('-')[-1]
