@@ -3,6 +3,12 @@ variable "lambda_function_name" {
   type        = "string"
 }
 
+variable "lambda_layers" {
+  description = "List of Lambda Layer Version ARNs to attach to the Lambda Function"
+  type        = "list"
+  default     = []
+}
+
 variable "zone_id" {
   description = "Id of a zone file to add records to"
   type        = "string"
