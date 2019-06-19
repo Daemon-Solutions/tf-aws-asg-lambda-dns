@@ -28,7 +28,7 @@ Usage
 module "dnsmagic" {
   source                           = "../modules/tf-aws-asg-lambda-dns/"
   zone_id                          = "Z2FA3UHII7N4VI"
-  asg_names                        = ["${aws_autoscaling_group.bar.name}"]
+  asg_names                        = [aws_autoscaling_group.bar.name]
   asg_count                        = 1
   sns_topic_name                   = "bastions_dns_lambda"
   lambda_function_name             = "handle_dns_for_bastions"
