@@ -52,7 +52,7 @@ resource "null_resource" "notify_sns_topic" {
   }
 
   provisioner "local-exec" {
-    command = "python3 ${path.module}/include/publish.py ${data.aws_region.current.name} ${element(var.asg_names, count.index)} ${aws_sns_topic.dns.arn}"
+    command = "python ${path.module}/include/publish.py ${data.aws_region.current.name} ${element(var.asg_names, count.index)} ${aws_sns_topic.dns.arn}"
   }
 }
 
