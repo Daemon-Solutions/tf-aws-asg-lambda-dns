@@ -1,6 +1,6 @@
 # Lambda function
 module "lambda" {
-  source        = "github.com/claranet/terraform-aws-lambda?ref=v1.0.0"
+  source        = "github.com/claranet/terraform-aws-lambda?ref=v1.2.0"
   function_name = var.lambda_function_name
   description   = "Manages DNS records for ${join(", ", var.asg_names)} AutoScaling Group(s)"
   handler       = "lambda.lambda_handler"
