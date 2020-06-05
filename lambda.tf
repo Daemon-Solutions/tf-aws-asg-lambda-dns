@@ -8,7 +8,9 @@ module "lambda" {
   layers        = var.lambda_layers
   timeout       = 300
   source_path   = "${path.module}/include/lambda.py"
-  policy        = data.aws_iam_policy_document.lambda.json
+  policy        = {
+    json = data.aws_iam_policy_document.lambda.json
+  }
 
   environment = {
     variables = {
