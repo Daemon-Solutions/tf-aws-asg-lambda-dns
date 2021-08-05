@@ -1,7 +1,8 @@
 terraform {
-  required_version = "> 0.9.0"
+  required_version = "> 0.11"
 }
 
 data "aws_region" "current" {
-  count = "${var.enabled ? 1 : 0}"
+  count = var.enabled ? 1 : 0
 }
+
