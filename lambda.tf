@@ -4,11 +4,12 @@ module "lambda" {
   function_name = var.lambda_function_name
   description   = "Manages DNS records for ${join(", ", var.asg_names)} AutoScaling Group(s)"
   handler       = "lambda.lambda_handler"
-  runtime       = "python3.7"
+  runtime       = var.runtime
   layers        = var.lambda_layers
   timeout       = 300
   source_path   = "${path.module}/include/lambda.py"
-  policy        = {
+  build_command = "${var.runtime} build.py '$filename' '$runtime' '$source'"
+  policy = {
     json = data.aws_iam_policy_document.lambda.json
   }
 
@@ -57,4 +58,3 @@ resource "null_resource" "notify_sns_topic" {
     command = "python ${path.module}/include/publish.py ${data.aws_region.current.name} ${element(var.asg_names, count.index)} ${aws_sns_topic.dns.arn}"
   }
 }
-
