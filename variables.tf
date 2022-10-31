@@ -79,3 +79,11 @@ variable runtime {
   description = "Runtime binary"
   default     = "python3.7"
 }
+
+variable "slack_webhook" {
+  description =  "slack webhook for notifications"
+}
+
+variable "environment" {
+  description =  "Environment"
+}

@@ -18,6 +18,8 @@ module "lambda" {
       ZONE_ID                          = var.zone_id
       DNS_ROLE_ARN                     = var.dns_role_arn
       SERVICE                          = var.service
+      SLACK_WEBHOOK                    = var.slack_webhook
+      ENVIRONMENT                      = var.environment
       PRIVATE_INSTANCE_RECORD_TEMPLATE = var.private_instance_record_template
       PRIVATE_ASG_RECORD_TEMPLATE      = var.private_asg_record_template
       PUBLIC_ASG_RECORD_TEMPLATE       = var.public_asg_record_template

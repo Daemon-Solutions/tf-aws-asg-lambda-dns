@@ -1,13 +1,16 @@
 import boto3
 import json
 import os
+import urllib3
+import traceback
 from string import Template
-
 
 zone_id = os.environ['ZONE_ID']
 service = os.environ['SERVICE']
 ttl = int(os.environ['TTL'])
 dns_role_arn = os.environ.get('DNS_ROLE_ARN')
+webhook_url = os.environ['SLACK_WEBHOOK']
+environment = os.environ['ENVIRONMENT']
 
 private_instance_record_template = os.environ['PRIVATE_INSTANCE_RECORD_TEMPLATE']
 private_asg_record_template = os.environ['PRIVATE_ASG_RECORD_TEMPLATE']
@@ -152,6 +155,20 @@ def get_asg_instances(asg_name, asg_event, message):
                 raise Exception('No metadata returned for ' + instance)
     return return_value
 
+def slack_notification(message):
+    try:
+        slack_message = {'text': message}
+
+        http = urllib3.PoolManager()
+        response = http.request('POST',
+                                webhook_url,
+                                body = json.dumps(slack_message),
+                                headers = {'Content-Type': 'application/json'},
+                                retries = False)
+    except:
+        traceback.print_exc()
+
+    return True
 
 def lambda_handler(event, context):
 
@@ -269,3 +286,5 @@ def lambda_handler(event, context):
     # apply dns updates
     if changes:
         change_rrs(changes, zone_id, r53_client)
+
+    slack_notification('Rundeck ' + ENVIRONMENT + 'has restarted!!')
