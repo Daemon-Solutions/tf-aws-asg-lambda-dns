@@ -1,13 +1,16 @@
+#!/usr/bin/python3
+
 import boto3
 import json
 import os
+import urllib3
+import traceback
 from string import Template
 
 
 zone_id = os.environ['ZONE_ID']
 service = os.environ['SERVICE']
 ttl = int(os.environ['TTL'])
-dns_role_arn = os.environ.get('DNS_ROLE_ARN')
 webhook_url = os.environ['SLACK_WEBHOOK']
 environment = os.environ['ENVIRONMENT']
 
@@ -20,33 +23,17 @@ manage_private_asg_dns = os.environ['MANAGE_PRIVATE_ASG_DNS'].lower() in ["true"
 manage_public_asg_dns = os.environ['MANAGE_PUBLIC_ASG_DNS'].lower() in ["true", "1"]
 
 aws_region = os.environ.get('AWS_DEFAULT_REGION')
-
+r53_client = boto3.client('route53')
 ec2_resource = boto3.resource('ec2', region_name=aws_region)
 asg_client = boto3.client('autoscaling', region_name=aws_region)
 
-
-def get_session(role_arn, sts_client):
-    """
-    Assumes a role in the given account and returns a Boto3 session.
-
-    """
-
-    # Assume the role and get back credentials.
-    acc_id = sts_client.get_caller_identity()['Account']
-    response = sts_client.assume_role(
-        RoleArn=role_arn,
-        RoleSessionName='{}-updates-in-{}-from-{}'.format(service, zone_id, acc_id),
-        DurationSeconds=900,
-    )
-    creds = response['Credentials']
-
-    # Return a new session using those credentials.
-    session = boto3.Session(
-        aws_access_key_id=creds['AccessKeyId'],
-        aws_secret_access_key=creds['SecretAccessKey'],
-        aws_session_token=creds['SessionToken'],
-    )
-    return session
+# get domain name
+try:
+    hostedzone = r53_client.get_hosted_zone(Id=zone_id)
+    domain = hostedzone['HostedZone']['Name']
+except Exception as e:
+    print(e)
+    raise
 
 
 def generate_record_name(template, **kwargs):
@@ -75,99 +62,24 @@ def generate_record_name(template, **kwargs):
     return names_map[template].substitute(**kwargs)
 
 
-def change_rrs(changes, zoneid, r53_client):
-    """
-    make DNS update
-    :param changes: list of R53 changes
-    :param zoneid: string
-    :return: response dict
-    """
-    print('Performing change {}'.format(json.dumps(changes)))
-    response = r53_client.change_resource_record_sets(
-        HostedZoneId='/hostedzone/{}'.format(zoneid),
-        ChangeBatch={
-            'Comment': 'Updated by Lambda Function',
-            'Changes': changes
-        }
-    )
-    return response
+def slack_notification(message):
+    try:
+        slack_message = {'text': message}
 
+        http = urllib3.PoolManager()
+        response = http.request('POST',
+                                webhook_url,
+                                body = json.dumps(slack_message),
+                                headers = {'Content-Type': 'application/json'},
+                                retries = False)
+    except:
+        traceback.print_exc()
 
-def parse_event(event):
-    """
-    :param event: event object received by lambda
-    :return: tuple containing message and metadata from an event object
-    """
-    metadata = {}
-    message = json.loads(event['Records'][0]['Sns']['Message'])
-    if 'NotificationMetadata' in list(message.keys()):
-        metadata = json.loads(message['NotificationMetadata'])
-    return message, metadata
+    return True
 
-
-def get_instance_metadata(instance_id):
-    """
-    :param instance_id: string
-    :return: dict containing info about instance
-    """
-
-    instance = ec2_resource.Instance(instance_id)
-    # we only want running instances
-    if instance.state['Name'] not in ['running']:
-        return False
-    metadata = {
-        'private_ip': instance.private_ip_address,
-        'private_hostname': instance.private_dns_name,
-        'public_ip': instance.public_ip_address,
-        'az': instance.placement['AvailabilityZone']
-    }
-    return metadata
-
-
-def get_asg_instances(asg_name, asg_event, message):
-    """
-    :param asg_name: string
-    :return: dict of dicts with keys being instance IDs and values
-    being instance information as returned by get_instance_metadata
-    """
-    asg = asg_client.describe_auto_scaling_groups(
-        AutoScalingGroupNames=[asg_name])
-    # get instances IDs
-    asg_instances = [i['InstanceId']
-                     for i in asg['AutoScalingGroups'][0]['Instances']]
-
-    # ensure launching instance is found in the asg
-    ec2_instance = ""
-    if asg_event == "autoscaling:EC2_INSTANCE_LAUNCH":
-        ec2_instance = message['EC2InstanceId']
-        if ec2_instance not in asg_instances:
-            raise Exception('Launched instance not found in asg')
-
-    return_value = {}
-    for instance in asg_instances:
-        metadata = get_instance_metadata(instance)
-        if metadata:
-            return_value[instance] = metadata
-        else:
-            # ensure metadata is found for launching instance
-            if instance == ec2_instance and asg_event == "autoscaling:EC2_INSTANCE_LAUNCH":
-                raise Exception('No metadata returned for ' + instance)
-    return return_value
 
 
 def lambda_handler(event, context):
-
-    # assume role in DNS account if dns_role_arn is specified
-    if dns_role_arn:
-        sts_client = boto3.client('sts')
-        dns_session = get_session(dns_role_arn, sts_client)
-        r53_client = dns_session.client('route53')
-    else:
-        r53_client = boto3.client('route53')
-
-    # get domain name
-    hostedzone = r53_client.get_hosted_zone(Id=zone_id)
-    domain = hostedzone['HostedZone']['Name']
 
     # parse event
     message, metadata = parse_event(event)
@@ -177,6 +89,8 @@ def lambda_handler(event, context):
     print('Metadata: {}'.format(json.dumps(metadata)))
 
     # asg name and event
+    #print(message['AutoScalingGroupName'])
+    #asg_name = message['AutoScalingGroupName']
     asg_name = message['AutoScalingGroupName']
     asg_event = message['Event']
 
@@ -200,6 +114,11 @@ def lambda_handler(event, context):
 
     # holds DNS changes to do
     changes = []
+    asg_event_types = {
+        'launch': 'autoscaling:EC2_INSTANCE_LAUNCH',
+        'terminate': 'autoscaling:EC2_INSTANCE_TERMINATE',
+        'test': 'autoscaling:TEST_NOTIFICATION',
+    }
 
     if manage_instance_dns:
         # instance has been launched or asg created
@@ -270,4 +189,112 @@ def lambda_handler(event, context):
 
     # apply dns updates
     if changes:
-        change_rrs(changes, zone_id, r53_client)
+        change_rrs(changes, zone_id)
+    slack_notification('Rundeck ' + environment + ' has restarted!!')
+
+
+# helpers
+
+def find_record(name, zone_id):
+    """
+    find resource record
+    :param name: string, record name to find
+    :param zone_id: string
+    :return: resource record:
+        [{u'Name': 'myrecord.kops.askredhat.com.',
+         u'ResourceRecords': [{u'Value': '10.10.10.10'},
+         {u'Value': '10.10.10.11'},
+         {u'Value': '10.10.10.12'}],
+         u'TTL': 300,
+         u'Type': 'A'}]
+    """
+    paginator = r53_client.get_paginator('list_resource_record_sets')
+    page_iterator = paginator.paginate(
+        HostedZoneId='hostedzone/{}'.format(zone_id))
+    rrs = None
+    for page in page_iterator:
+        rrs = filter(lambda record:
+                     record['Name'] == name, page['ResourceRecordSets'])
+        if rrs:
+            break
+    return rrs
+
+
+def change_rrs(changes, zoneid):
+    """
+    make DNS update
+    :param changes: list of R53 changes
+    :param zoneid: string
+    :return: response dict
+    """
+    print('Performing change {}'.format(json.dumps(changes)))
+    response = r53_client.change_resource_record_sets(
+        HostedZoneId='/hostedzone/{}'.format(zoneid),
+        ChangeBatch={
+            'Comment': 'Updated by Lambda Function',
+            'Changes': changes
+        }
+    )
+    return response
+
+
+def parse_event(event):
+    """
+    :param event: event object received by lambda
+    :return: tuple containing message and metadata from an event object
+    """
+    metadata = {}
+    message = json.loads(event['Records'][0]['Sns']['Message'])
+    if 'NotificationMetadata' in message.keys():
+        metadata = json.loads(message['NotificationMetadata'])
+    return message, metadata
+
+
+def get_instance_metadata(instance_id):
+    """
+    :param instance_id: string
+    :return: dict containing info about instance
+    """
+
+    instance = ec2_resource.Instance(instance_id)
+    # we only want running instances
+    if instance.state['Name'] not in ['running']:
+        return False
+    metadata = {
+        'private_ip': instance.private_ip_address,
+        'private_hostname': instance.private_dns_name,
+        'public_ip': instance.public_ip_address,
+        'az': instance.placement['AvailabilityZone']
+    }
+    return metadata
+
+
+def get_asg_instances(asg_name, asg_event, message):
+    """
+    :param asg_name: string
+    :return: dict of dicts with keys being instance IDs and values
+    being instance information as returned by get_instance_metadata
+    """
+    asg = asg_client.describe_auto_scaling_groups(
+        AutoScalingGroupNames=[asg_name])
+    # get instances IDs
+    asg_instances = [i['InstanceId']
+                     for i in asg['AutoScalingGroups'][0]['Instances']]
+
+    # ensure launching instance is found in the asg
+    ec2_instance = ""
+    if asg_event == "autoscaling:EC2_INSTANCE_LAUNCH":
+        ec2_instance = message['EC2InstanceId']
+        if ec2_instance not in asg_instances:
+            raise Exception('Launched instance not found in asg')
+
+    return_value = {}
+    for instance in asg_instances:
+        metadata = get_instance_metadata(instance)
+        if metadata:
+            return_value[instance] = metadata
+        else:
+            # ensure metadata is found for launching instance
+            if instance == ec2_instance and asg_event == "autoscaling:EC2_INSTANCE_LAUNCH":
+                raise Exception('No metadata returned for ' + instance)
+    return return_value
