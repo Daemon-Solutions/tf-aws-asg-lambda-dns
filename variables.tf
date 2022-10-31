@@ -1,12 +1,12 @@
+variable "enabled" {
+  description = "Enable or disable the Lambda DNS functionality."
+  type        = string
+  default     = "1"
+}
+
 variable "lambda_function_name" {
   description = "The name of the Lambda Function to create, which will manage the Autoscaling Groups"
   type        = string
-}
-
-variable "lambda_layers" {
-  description = "List of Lambda Layer Version ARNs to attach to the Lambda Function"
-  type        = list(string)
-  default     = []
 }
 
 variable "zone_id" {
@@ -14,20 +14,14 @@ variable "zone_id" {
   type        = string
 }
 
-variable "dns_role_arn" {
-  description = "ARN of a role to assume to manage DNS records. Useful if DNS zone is in different account"
-  type        = string
-  default     = ""
-}
-
 variable "asg_names" {
-  description = "The Autoscaling Group names to attach to this Lambda Function"
+  description = "Name of the Autoscaling Groups to attach this Lambda Function to"
   type        = list(string)
 }
 
 variable "asg_count" {
   description = "Number of the Autoscaling Groups defined in asg_names variable. Only here because count cannot be computed"
-  default     = 1
+  default     = "1"
 }
 
 variable "sns_topic_name" {
