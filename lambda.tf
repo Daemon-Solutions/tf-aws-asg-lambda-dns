@@ -1,14 +1,15 @@
 # Lambda function
 module "lambda" {
-  source        = "github.com/claranet/terraform-aws-lambda?ref=v1.2.0"
+  source        = "git@github.com:Daemon-Solutions/terraform-aws-lambda?ref=v1.2.0"
   function_name = var.lambda_function_name
   description   = "Manages DNS records for ${join(", ", var.asg_names)} AutoScaling Group(s)"
   handler       = "lambda.lambda_handler"
-  runtime       = "python3.7"
+  runtime       = var.runtime
   layers        = var.lambda_layers
   timeout       = 300
   source_path   = "${path.module}/include/lambda.py"
-  policy        = {
+  build_command = "${var.runtime} build.py '$filename' '$runtime' '$source'"
+  policy = {
     json = data.aws_iam_policy_document.lambda.json
   }
 
@@ -17,6 +18,8 @@ module "lambda" {
       ZONE_ID                          = var.zone_id
       DNS_ROLE_ARN                     = var.dns_role_arn
       SERVICE                          = var.service
+      SLACK_WEBHOOK                    = var.slack_webhook
+      ENVIRONMENT                      = var.environment
       PRIVATE_INSTANCE_RECORD_TEMPLATE = var.private_instance_record_template
       PRIVATE_ASG_RECORD_TEMPLATE      = var.private_asg_record_template
       PUBLIC_ASG_RECORD_TEMPLATE       = var.public_asg_record_template
@@ -57,4 +60,3 @@ resource "null_resource" "notify_sns_topic" {
     command = "python ${path.module}/include/publish.py ${data.aws_region.current.name} ${element(var.asg_names, count.index)} ${aws_sns_topic.dns.arn}"
   }
 }
-

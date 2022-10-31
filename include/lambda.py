@@ -8,6 +8,8 @@ zone_id = os.environ['ZONE_ID']
 service = os.environ['SERVICE']
 ttl = int(os.environ['TTL'])
 dns_role_arn = os.environ.get('DNS_ROLE_ARN')
+webhook_url = os.environ['SLACK_WEBHOOK']
+environment = os.environ['ENVIRONMENT']
 
 private_instance_record_template = os.environ['PRIVATE_INSTANCE_RECORD_TEMPLATE']
 private_asg_record_template = os.environ['PRIVATE_ASG_RECORD_TEMPLATE']
