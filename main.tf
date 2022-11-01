@@ -18,13 +18,15 @@ resource "aws_lambda_function" "manage_dns" {
   function_name    = var.lambda_function_name
   role             = join("", aws_iam_role.lambda_manage_dns_role.*.arn)
   handler          = "lambda.lambda_handler"
-  runtime          = "python2.7"
+  runtime          = var.runtime
   timeout          = "60"
 
   environment {
     variables = {
       ZONE_ID                          = var.zone_id
       SERVICE                          = var.service
+      SLACK_WEBHOOK                    = var.slack_webhook
+      ENVIRONMENT                      = var.environment
       PRIVATE_INSTANCE_RECORD_TEMPLATE = var.private_instance_record_template
       PRIVATE_ASG_RECORD_TEMPLATE      = var.private_asg_record_template
       PUBLIC_ASG_RECORD_TEMPLATE       = var.public_asg_record_template
@@ -38,7 +40,7 @@ resource "aws_lambda_function" "manage_dns" {
 
 resource "null_resource" "notify_sns_topic" {
   depends_on = [aws_lambda_function.manage_dns]
-  count      = var.asg_count && var.enabled ? 1 : 0
+  count      = var.asg_count == "1"  && var.enabled == "1" ? 1 : 0
 
   triggers = {
     zone_id                          = var.zone_id

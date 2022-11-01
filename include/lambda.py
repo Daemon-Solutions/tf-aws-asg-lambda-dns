@@ -1,14 +1,18 @@
-#!/usr/bin/python2
+#!/usr/bin/python3
 
 import boto3
 import json
 import os
+import urllib3
+import traceback
 from string import Template
 
 
 zone_id = os.environ['ZONE_ID']
 service = os.environ['SERVICE']
 ttl = int(os.environ['TTL'])
+webhook_url = os.environ['SLACK_WEBHOOK']
+environment = os.environ['ENVIRONMENT']
 
 private_instance_record_template = os.environ['PRIVATE_INSTANCE_RECORD_TEMPLATE']
 private_asg_record_template = os.environ['PRIVATE_ASG_RECORD_TEMPLATE']
@@ -28,7 +32,7 @@ try:
     hostedzone = r53_client.get_hosted_zone(Id=zone_id)
     domain = hostedzone['HostedZone']['Name']
 except Exception as e:
-    print e
+    print(e)
     raise
 
 
@@ -58,35 +62,55 @@ def generate_record_name(template, **kwargs):
     return names_map[template].substitute(**kwargs)
 
 
+def slack_notification(message):
+    try:
+        slack_message = {'text': message}
+
+        http = urllib3.PoolManager()
+        response = http.request('POST',
+                                webhook_url,
+                                body = json.dumps(slack_message),
+                                headers = {'Content-Type': 'application/json'},
+                                retries = False)
+    except:
+        traceback.print_exc()
+
+    return True
+
+
+
 def lambda_handler(event, context):
 
+    # parse event
     message, metadata = parse_event(event)
 
-    print 'Received event: {}'.format(json.dumps(event))
-    print 'Message: {}'.format(json.dumps(message))
-    print 'Metadata: {}'.format(json.dumps(metadata))
+    print('Received event: {}'.format(json.dumps(event)))
+    print('Message: {}'.format(json.dumps(message)))
+    print('Metadata: {}'.format(json.dumps(metadata)))
 
     # asg name and event
+    #print(message['AutoScalingGroupName'])
+    #asg_name = message['AutoScalingGroupName']
     asg_name = message['AutoScalingGroupName']
     asg_event = message['Event']
 
     # get metadata of all instances in ASG
     instances_metadata = get_asg_instances(asg_name, asg_event, message)
-    print 'ASG INSTANCES: {}'.format(json.dumps(instances_metadata))
+    print('ASG INSTANCES: {}'.format(json.dumps(instances_metadata)))
 
     # create a list of public addresses of all instances in ASG
     asg_public_ips = []
-    for _metadata in instances_metadata.itervalues():
+    for _metadata in instances_metadata.values():
         if _metadata['public_ip'] is not None:
             asg_public_ips.append(_metadata['public_ip'])
         else:
             continue
-    print 'ASG_PUBLIC_IPS: {}'.format(json.dumps(asg_public_ips))
+    print('ASG_PUBLIC_IPS: {}'.format(json.dumps(asg_public_ips)))
 
     # create a list of private addresses of asg instances
     asg_private_ips = [instances_metadata[i]['private_ip']
-                       for i in instances_metadata.iterkeys()]
-    print 'ASG_PRIVATE_IPS: {}'.format(json.dumps(asg_private_ips))
+                       for i in instances_metadata.keys()]
+    print('ASG_PRIVATE_IPS: {}'.format(json.dumps(asg_private_ips)))
 
     # holds DNS changes to do
     changes = []
@@ -99,7 +123,7 @@ def lambda_handler(event, context):
     if manage_instance_dns:
         # instance has been launched or asg created
         if instances_metadata:
-            for instance_id, instance_info in instances_metadata.iteritems():
+            for instance_id, instance_info in instances_metadata.items():
                 instance_ip = instance_info['private_ip']
                 az = instance_info['az']
                 az_short = az.split('-')[-1]
@@ -166,6 +190,7 @@ def lambda_handler(event, context):
     # apply dns updates
     if changes:
         change_rrs(changes, zone_id)
+    slack_notification('Rundeck ' + environment + ' has restarted!!')
 
 
 # helpers
@@ -202,7 +227,7 @@ def change_rrs(changes, zoneid):
     :param zoneid: string
     :return: response dict
     """
-    print 'Performing change {}'.format(json.dumps(changes))
+    print('Performing change {}'.format(json.dumps(changes)))
     response = r53_client.change_resource_record_sets(
         HostedZoneId='/hostedzone/{}'.format(zoneid),
         ChangeBatch={
