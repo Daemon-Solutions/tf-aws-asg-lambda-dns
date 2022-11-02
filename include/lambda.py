@@ -5,6 +5,7 @@ import json
 import os
 import urllib3
 import traceback
+import datetime
 from string import Template
 
 
@@ -13,6 +14,12 @@ service = os.environ['SERVICE']
 ttl = int(os.environ['TTL'])
 webhook_url = os.environ['SLACK_WEBHOOK']
 environment = os.environ['ENVIRONMENT']
+pd_key = os.environ['PD_KEY']
+dedup_pd_key = os.environ['PD_DEDUP_KEY']
+pd_message = os.environ['PD_MESSAGE']
+datestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
+
+PD_DATA = ('{"payload": {"summary": "' + pd_message + '","timestamp": "' + datestamp + '","severity": "critical","source": "Laguna Rundeck PROD"},"routing_key": "' + pd_key + '", "dedup_key":  "' + dedup_pd_key + '","event_action": "trigger"}')
 
 private_instance_record_template = os.environ['PRIVATE_INSTANCE_RECORD_TEMPLATE']
 private_asg_record_template = os.environ['PRIVATE_ASG_RECORD_TEMPLATE']
@@ -191,6 +198,20 @@ def lambda_handler(event, context):
     if changes:
         change_rrs(changes, zone_id)
     slack_notification('Rundeck ' + environment + ' has restarted!!')
+    
+    #PagerDuty Alert
+    if environment == "production":
+        data = json.loads(PD_DATA)
+        data = json.dumps(data)
+        data = data.encode()
+        http = urllib3.PoolManager()
+        response = http.request('POST',
+            'https://events.pagerduty.com/v2/enqueue',
+            body = data,
+            headers = {'Content-Type': 'application/json'},
+            retries = False)
+        content = response.read()
+        print(content)
 
 
 # helpers

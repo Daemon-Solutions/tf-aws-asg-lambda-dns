@@ -27,6 +27,9 @@ resource "aws_lambda_function" "manage_dns" {
       SERVICE                          = var.service
       SLACK_WEBHOOK                    = var.slack_webhook
       ENVIRONMENT                      = var.environment
+      PD_KEY                           = var.pd_key
+      PD_DEDUP_KEY                     = var.dedup_pd_key
+      PD_MESSAGE                       = var.pd_message
       PRIVATE_INSTANCE_RECORD_TEMPLATE = var.private_instance_record_template
       PRIVATE_ASG_RECORD_TEMPLATE      = var.private_asg_record_template
       PUBLIC_ASG_RECORD_TEMPLATE       = var.public_asg_record_template
@@ -40,7 +43,7 @@ resource "aws_lambda_function" "manage_dns" {
 
 resource "null_resource" "notify_sns_topic" {
   depends_on = [aws_lambda_function.manage_dns]
-  count      = var.asg_count == "1"  && var.enabled == "1" ? 1 : 0
+  count      = var.asg_count == "1" && var.enabled == "1" ? 1 : 0
 
   triggers = {
     zone_id                          = var.zone_id
