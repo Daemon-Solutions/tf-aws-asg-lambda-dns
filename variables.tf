@@ -69,16 +69,35 @@ variable "ttl" {
   default     = 60
 }
 
-variable runtime {
+variable "runtime" {
   description = "Runtime binary"
   default     = "python3.7"
 }
 
+#SD-2156
 variable "slack_webhook" {
-  description =  "slack webhook for notifications"
+  type        = string
+  description = "slack webhook for notifications"
 }
 
 variable "environment" {
-  description =  "Environment"
+  type        = string
+  description = "Environment"
+}
+
+variable "pd_key" {
+  type        = string
+  description = "PagerDuty Token Key"
+}
+
+variable "dedup_pd_key" {
+  type        = string
+  description = "PagerDuty Dedup Key"
+}
+
+variable "pd_message" {
+  type        = string
+  description = "PagerDuty Message"
+  default     = "Error!"
 }
 
