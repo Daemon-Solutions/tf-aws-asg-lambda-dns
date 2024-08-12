@@ -9,17 +9,23 @@ import datetime
 from string import Template
 
 
+
 zone_id = os.environ['ZONE_ID']
 service = os.environ['SERVICE']
 ttl = int(os.environ['TTL'])
 webhook_url = os.environ['SLACK_WEBHOOK']
 environment = os.environ['ENVIRONMENT']
-pd_key = os.environ['PD_KEY']
-dedup_pd_key = os.environ['PD_DEDUP_KEY']
-pd_message = os.environ['PD_MESSAGE']
+secret_name = os.environ['SECRET_NAME']
+pd_service = os.environ['PD_SERVICE']
+pd_escalation_policy = os.environ['PD_ESCALATION_POLICY']
+pd_priority = os.environ['PD_PRIORITY']
+pd_user_email = os.environ['PD_USER_EMAIL']
+
+
 datestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
 
-PD_DATA = ('{"payload": {"summary": "' + pd_message + '","timestamp": "' + datestamp + '","severity": "critical","source": "Laguna Rundeck PROD"},"routing_key": "' + pd_key + '", "dedup_key":  "' + dedup_pd_key + '","event_action": "trigger"}')
+PD_DATA = ('{"incident":{"type":"incident","title": "Rundeck ' + environment + ' has restarted!","service":{"id":"' + pd_service + '","type":"service_reference"},"priority":{"id":"' + pd_priority + '","type":"priority_reference"},"urgency":"high","incident_key":"test1","body":{"type":"incident_body","details":"Rundeck ' + environment + ' has restarted!"},"escalation_policy":{"id":"' + pd_escalation_policy + '","type":"escalation_policy_reference"}}}')
+
 
 private_instance_record_template = os.environ['PRIVATE_INSTANCE_RECORD_TEMPLATE']
 private_asg_record_template = os.environ['PRIVATE_ASG_RECORD_TEMPLATE']
@@ -85,6 +91,18 @@ def slack_notification(message):
     return True
 
 
+def get_secret(secret_name):
+
+    session = boto3.session.Session()
+    client = session.client(
+        service_name='secretsmanager',
+        region_name=aws_region
+    )
+
+    get_secret_value_response = client.get_secret_value(SecretId=secret_name)
+
+    secret = json.loads(get_secret_value_response['SecretString'])
+    return secret
 
 def lambda_handler(event, context):
 
@@ -200,18 +218,20 @@ def lambda_handler(event, context):
     slack_notification('Rundeck ' + environment + ' has restarted!!')
     
     #PagerDuty Alert
-    if environment == "production":
-        data = json.loads(PD_DATA)
-        data = json.dumps(data)
-        data = data.encode()
-        http = urllib3.PoolManager()
-        response = http.request('POST',
-            'https://events.pagerduty.com/v2/enqueue',
-            body = data,
-            headers = {'Content-Type': 'application/json'},
-            retries = False)
-        content = response.read()
-        print(content)
+    data = json.loads(PD_DATA)
+    data = json.dumps(data)
+    data = data.encode()
+    http = urllib3.PoolManager()
+    secret_value = get_secret(secret_name)
+    new_secret_value = (secret_value['pager_duty_api_key'])
+    print("new_secret_value " + new_secret_value)
+    response = http.request('POST',
+        'https://api.pagerduty.com/incidents',
+        body = data,
+        headers = {'Content-Type': 'application/json','Accept': 'application/vnd.pagerduty+json;version=2','Authorization': 'Token token=' + str(new_secret_value) + '', 'From': '' + pd_user_email + ''},
+        retries = False)
+    content = response.read()
+    print(content)
 
 
 # helpers

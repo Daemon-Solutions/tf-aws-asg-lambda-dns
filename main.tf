@@ -27,9 +27,11 @@ resource "aws_lambda_function" "manage_dns" {
       SERVICE                          = var.service
       SLACK_WEBHOOK                    = var.slack_webhook
       ENVIRONMENT                      = var.environment
-      PD_KEY                           = var.pd_key
-      PD_DEDUP_KEY                     = var.dedup_pd_key
-      PD_MESSAGE                       = var.pd_message
+      PD_SERVICE                       = var.pd_service
+      PD_PRIORITY                      = var.pd_priority
+      PD_ESCALATION_POLICY             = var.pd_escalation_policy
+      PD_USER_EMAIL                    = var.pd_user_email
+      SECRET_NAME                      = var.secret_name
       PRIVATE_INSTANCE_RECORD_TEMPLATE = var.private_instance_record_template
       PRIVATE_ASG_RECORD_TEMPLATE      = var.private_asg_record_template
       PUBLIC_ASG_RECORD_TEMPLATE       = var.public_asg_record_template
