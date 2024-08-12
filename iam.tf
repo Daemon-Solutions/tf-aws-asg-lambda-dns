@@ -58,6 +58,14 @@ resource "aws_iam_role_policy" "lambda_manage_dns_policy" {
         "ec2:DescribeInstances"
       ],
       "Resource": "*"
+    },
+      {
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:Get*",
+        "secretsmanager:List*"
+      ],
+      "Resource": "*"
     }
   ]
 }

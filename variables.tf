@@ -85,19 +85,27 @@ variable "environment" {
   description = "Environment"
 }
 
-variable "pd_key" {
+variable "pd_service" {
   type        = string
-  description = "PagerDuty Token Key"
+  description = "PagerDuty Service ID"
 }
 
-variable "dedup_pd_key" {
+variable "pd_priority" {
   type        = string
-  description = "PagerDuty Dedup Key"
+  description = "PagerDuty Priority ID"
 }
 
-variable "pd_message" {
+variable "pd_escalation_policy" {
   type        = string
-  description = "PagerDuty Message"
-  default     = "Error!"
+  description = "PagerDuty Escalation Policy"
 }
 
+variable "pd_user_email" {
+  type        = string
+  description = "PagerDuty Registered User Email"
+}
+
+variable "secret_name" {
+  type        = string
+  description = "Daemon Secret Manager"
+}
