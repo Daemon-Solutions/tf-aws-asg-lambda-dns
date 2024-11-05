@@ -215,7 +215,7 @@ def lambda_handler(event, context):
     # apply dns updates
     if changes:
         change_rrs(changes, zone_id)
-    slack_notification('Rundeck ' + environment + ' has restarted!!')
+    slack_notification(f"{service} {environment} has restarted!!") 
     
     #PagerDuty Alert
     data = json.loads(PD_DATA)
