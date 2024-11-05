@@ -106,7 +106,7 @@ No modules.
 | <a name="input_private_asg_record_template"></a> [private\_asg\_record\_template](#input\_private\_asg\_record\_template) | The fully qualified domain name format for private Autoscaling Group DNS records | `string` | `"service.internal.domain"` | no |
 | <a name="input_private_instance_record_template"></a> [private\_instance\_record\_template](#input\_private\_instance\_record\_template) | The fully qualified domain name format for private instance DNS records | `string` | `"service.az.domain"` | no |
 | <a name="input_public_asg_record_template"></a> [public\_asg\_record\_template](#input\_public\_asg\_record\_template) | The fully qualified domain name format for public Autoscaling Group DNS records | `string` | `"service.domain"` | no |
-| <a name="input_runtime"></a> [runtime](#input\_runtime) | Runtime binary | `string` | `"python3.7"` | no |
+| <a name="input_runtime"></a> [runtime](#input\_runtime) | Runtime binary | `string` | `"python3.12"` | no |
 | <a name="input_secret_name"></a> [secret\_name](#input\_secret\_name) | Daemon Secret Manager | `string` | n/a | yes |
 | <a name="input_service"></a> [service](#input\_service) | Autoscaling Group service name, e.g. 'bastion'. This will be prefix for DNS records. | `string` | n/a | yes |
 | <a name="input_slack_webhook"></a> [slack\_webhook](#input\_slack\_webhook) | slack webhook for notifications | `string` | n/a | yes |
