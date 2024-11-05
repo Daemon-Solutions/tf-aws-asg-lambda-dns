@@ -71,7 +71,7 @@ variable "ttl" {
 
 variable "runtime" {
   description = "Runtime binary"
-  default     = "python3.7"
+  default     = "python3.12"
 }
 
 #SD-2156
