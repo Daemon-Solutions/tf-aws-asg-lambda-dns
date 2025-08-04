@@ -1,3 +1,9 @@
+## [4.0.11](https://github.com/Daemon-Solutions/tf-aws-asg-lambda-dns/compare/v4.0.10...v4.0.11) (2025-08-04)
+
+### Bug Fixes
+
+* **sd-4482:** make python run in a virtual env ([e69a817](https://github.com/Daemon-Solutions/tf-aws-asg-lambda-dns/commit/e69a8179c97efad28f912c114915c0f3015ef8fc))
+
 ## [4.0.10](https://github.com/Daemon-Solutions/tf-aws-asg-lambda-dns/compare/v4.0.9...v4.0.10) (2025-08-04)
 
 ### Bug Fixes
