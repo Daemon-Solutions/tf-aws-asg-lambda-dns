@@ -56,7 +56,6 @@ resource "null_resource" "notify_sns_topic" {
   }
 
   provisioner "local-exec" {
-    command = "python ${path.module}/include/publish.py ${data.aws_region.current[0].name} ${element(var.asg_names, count.index)} ${aws_sns_topic.manage_dns_asg_sns[0].arn}"
+    command = "pip install boto3 && python ${path.module}/include/publish.py ${data.aws_region.current[0].name} ${element(var.asg_names, count.index)} ${aws_sns_topic.manage_dns_asg_sns[0].arn}"
   }
 }
-
