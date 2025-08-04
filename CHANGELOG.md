@@ -1,3 +1,9 @@
+## [4.0.10](https://github.com/Daemon-Solutions/tf-aws-asg-lambda-dns/compare/v4.0.9...v4.0.10) (2025-08-04)
+
+### Bug Fixes
+
+* **sd-4482:** install boto3 before running publish.py ([8ff7423](https://github.com/Daemon-Solutions/tf-aws-asg-lambda-dns/commit/8ff742318b62e33ab0578464a8e61299fbd36de0))
+
 ## 1.4.1 (November 10, 2017)
 
 BUG FIXES:
