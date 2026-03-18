@@ -74,38 +74,58 @@ variable "runtime" {
   default     = "python3.12"
 }
 
+# Notifications
+variable "enable_slack" {
+  description = "Enable Slack notifications from the Lambda."
+  type        = bool
+  default     = true
+}
+
+variable "enable_pagerduty" {
+  description = "Enable PagerDuty incident creation from the Lambda."
+  type        = bool
+  default     = true
+}
+
 #SD-2156
 variable "slack_webhook" {
   type        = string
   description = "slack webhook for notifications"
+  default     = ""
 }
 
 variable "environment" {
   type        = string
   description = "Environment"
+  default     = ""
 }
 
 variable "pd_service" {
   type        = string
   description = "PagerDuty Service ID"
+  default     = ""
 }
 
 variable "pd_priority" {
   type        = string
   description = "PagerDuty Priority ID"
+  default     = ""
 }
 
 variable "pd_escalation_policy" {
   type        = string
   description = "PagerDuty Escalation Policy"
+  default     = ""
 }
 
 variable "pd_user_email" {
   type        = string
   description = "PagerDuty Registered User Email"
+  default     = ""
 }
 
 variable "secret_name" {
   type        = string
   description = "Daemon Secret Manager"
+  default     = ""
 }
