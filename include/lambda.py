@@ -14,8 +14,8 @@ zone_id = os.environ['ZONE_ID']
 service = os.environ['SERVICE']
 ttl = int(os.environ['TTL'])
 
-enable_slack = os.environ.get('ENABLE_SLACK', 'True').lower() in ["true", "1"]
-enable_pagerduty = os.environ.get('ENABLE_PAGERDUTY', 'True').lower() in ["true", "1"]
+enable_slack = os.environ.get('ENABLE_SLACK', 'False')
+enable_pagerduty = os.environ.get('ENABLE_PAGERDUTY', 'False')
 
 webhook_url = os.environ.get('SLACK_WEBHOOK', '')
 environment = os.environ.get('ENVIRONMENT', '')
