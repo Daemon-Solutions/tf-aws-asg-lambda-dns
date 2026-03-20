@@ -78,13 +78,13 @@ variable "runtime" {
 variable "enable_slack" {
   description = "Enable Slack notifications from the Lambda."
   type        = bool
-  default     = true
+  default     = false
 }
 
 variable "enable_pagerduty" {
   description = "Enable PagerDuty incident creation from the Lambda."
   type        = bool
-  default     = true
+  default     = false
 }
 
 #SD-2156
