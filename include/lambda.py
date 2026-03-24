@@ -13,13 +13,17 @@ from string import Template
 zone_id = os.environ['ZONE_ID']
 service = os.environ['SERVICE']
 ttl = int(os.environ['TTL'])
-webhook_url = os.environ['SLACK_WEBHOOK']
-environment = os.environ['ENVIRONMENT']
-secret_name = os.environ['SECRET_NAME']
-pd_service = os.environ['PD_SERVICE']
-pd_escalation_policy = os.environ['PD_ESCALATION_POLICY']
-pd_priority = os.environ['PD_PRIORITY']
-pd_user_email = os.environ['PD_USER_EMAIL']
+
+enable_slack = os.environ.get('ENABLE_SLACK', 'False')
+enable_pagerduty = os.environ.get('ENABLE_PAGERDUTY', 'False')
+
+webhook_url = os.environ.get('SLACK_WEBHOOK', '')
+environment = os.environ.get('ENVIRONMENT', '')
+secret_name = os.environ.get('SECRET_NAME', '')
+pd_service = os.environ.get('PD_SERVICE', '')
+pd_escalation_policy = os.environ.get('PD_ESCALATION_POLICY', '')
+pd_priority = os.environ.get('PD_PRIORITY', '')
+pd_user_email = os.environ.get('PD_USER_EMAIL', '')
 
 
 datestamp = datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f")
@@ -77,6 +81,9 @@ def generate_record_name(template, **kwargs):
 
 def slack_notification(message):
     try:
+        if not webhook_url:
+            print("Slack notifications enabled but SLACK_WEBHOOK is empty; skipping.")
+            return False
         slack_message = {'text': message}
 
         http = urllib3.PoolManager()
@@ -92,6 +99,8 @@ def slack_notification(message):
 
 
 def get_secret(secret_name):
+    if not secret_name:
+        raise Exception("SECRET_NAME is empty")
 
     session = boto3.session.Session()
     client = session.client(
@@ -215,23 +224,38 @@ def lambda_handler(event, context):
     # apply dns updates
     if changes:
         change_rrs(changes, zone_id)
-    slack_notification(f"{service} {environment} has restarted!!") 
-    
-    #PagerDuty Alert
-    data = json.loads(PD_DATA)
-    data = json.dumps(data)
-    data = data.encode()
-    http = urllib3.PoolManager()
-    secret_value = get_secret(secret_name)
-    new_secret_value = (secret_value['pager_duty_api_key'])
-    print("new_secret_value " + new_secret_value)
-    response = http.request('POST',
-        'https://api.pagerduty.com/incidents',
-        body = data,
-        headers = {'Content-Type': 'application/json','Accept': 'application/vnd.pagerduty+json;version=2','Authorization': 'Token token=' + str(new_secret_value) + '', 'From': '' + pd_user_email + ''},
-        retries = False)
-    content = response.read()
-    print(content)
+
+    if enable_slack:
+        slack_notification(f"{service} {environment} has restarted!!")
+
+    if enable_pagerduty:
+        if not (pd_service and pd_priority and pd_escalation_policy and pd_user_email):
+            print("PagerDuty notifications enabled but required PD_* env vars are missing; skipping.")
+            return
+
+        try:
+            data = json.loads(PD_DATA)
+            data = json.dumps(data)
+            data = data.encode()
+            http = urllib3.PoolManager()
+            secret_value = get_secret(secret_name)
+            new_secret_value = (secret_value['pager_duty_api_key'])
+            response = http.request(
+                'POST',
+                'https://api.pagerduty.com/incidents',
+                body=data,
+                headers={
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/vnd.pagerduty+json;version=2',
+                    'Authorization': 'Token token=' + str(new_secret_value) + '',
+                    'From': '' + pd_user_email + ''
+                },
+                retries=False
+            )
+            content = response.read()
+            print(content)
+        except Exception:
+            traceback.print_exc()
 
 
 # helpers

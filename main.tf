@@ -25,8 +25,10 @@ resource "aws_lambda_function" "manage_dns" {
     variables = {
       ZONE_ID                          = var.zone_id
       SERVICE                          = var.service
+      ENABLE_SLACK                     = var.enable_slack ? "True" : "False"
       SLACK_WEBHOOK                    = var.slack_webhook
       ENVIRONMENT                      = var.environment
+      ENABLE_PAGERDUTY                 = var.enable_pagerduty ? "True" : "False"
       PD_SERVICE                       = var.pd_service
       PD_PRIORITY                      = var.pd_priority
       PD_ESCALATION_POLICY             = var.pd_escalation_policy

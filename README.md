@@ -36,6 +36,9 @@ module "dnsmagic" {
   manage_instance_dns              = true
   private_instance_record_template = "service.instanceid.domain"
   manage_private_asg_dns           = true
+  # Optional notifications (enabled by default)
+  enable_slack                     = false
+  enable_pagerduty                 = false
   ttl                              = 60
 }
 
@@ -94,22 +97,24 @@ No modules.
 | <a name="input_asg_count"></a> [asg\_count](#input\_asg\_count) | Number of the Autoscaling Groups defined in asg\_names variable. Only here because count cannot be computed | `string` | `"1"` | no |
 | <a name="input_asg_names"></a> [asg\_names](#input\_asg\_names) | Name of the Autoscaling Groups to attach this Lambda Function to | `list(string)` | n/a | yes |
 | <a name="input_enabled"></a> [enabled](#input\_enabled) | Enable or disable the Lambda DNS functionality. | `string` | `"1"` | no |
-| <a name="input_environment"></a> [environment](#input\_environment) | Environment | `string` | n/a | yes |
+| <a name="input_enable_pagerduty"></a> [enable\_pagerduty](#input\_enable\_pagerduty) | Enable PagerDuty incident creation from the Lambda. | `bool` | `true` | no |
+| <a name="input_enable_slack"></a> [enable\_slack](#input\_enable\_slack) | Enable Slack notifications from the Lambda. | `bool` | `true` | no |
+| <a name="input_environment"></a> [environment](#input\_environment) | Environment | `string` | `""` | no |
 | <a name="input_lambda_function_name"></a> [lambda\_function\_name](#input\_lambda\_function\_name) | The name of the Lambda Function to create, which will manage the Autoscaling Groups | `string` | n/a | yes |
 | <a name="input_manage_instance_dns"></a> [manage\_instance\_dns](#input\_manage\_instance\_dns) | Whether to manage DNS records for Autoscaling Group instances | `bool` | `true` | no |
 | <a name="input_manage_private_asg_dns"></a> [manage\_private\_asg\_dns](#input\_manage\_private\_asg\_dns) | Whether to manage DNS records for private Autoscaling Group instances | `bool` | `false` | no |
 | <a name="input_manage_public_asg_dns"></a> [manage\_public\_asg\_dns](#input\_manage\_public\_asg\_dns) | Whether to manage DNS records for public Autoscaling Group instances | `bool` | `false` | no |
-| <a name="input_pd_escalation_policy"></a> [pd\_escalation\_policy](#input\_pd\_escalation\_policy) | PagerDuty Escalation Policy | `string` | n/a | yes |
-| <a name="input_pd_priority"></a> [pd\_priority](#input\_pd\_priority) | PagerDuty Priority ID | `string` | n/a | yes |
-| <a name="input_pd_service"></a> [pd\_service](#input\_pd\_service) | PagerDuty Service ID | `string` | n/a | yes |
-| <a name="input_pd_user_email"></a> [pd\_user\_email](#input\_pd\_user\_email) | PagerDuty Registered User Email | `string` | n/a | yes |
+| <a name="input_pd_escalation_policy"></a> [pd\_escalation\_policy](#input\_pd\_escalation\_policy) | PagerDuty Escalation Policy | `string` | `""` | no |
+| <a name="input_pd_priority"></a> [pd\_priority](#input\_pd\_priority) | PagerDuty Priority ID | `string` | `""` | no |
+| <a name="input_pd_service"></a> [pd\_service](#input\_pd\_service) | PagerDuty Service ID | `string` | `""` | no |
+| <a name="input_pd_user_email"></a> [pd\_user\_email](#input\_pd\_user\_email) | PagerDuty Registered User Email | `string` | `""` | no |
 | <a name="input_private_asg_record_template"></a> [private\_asg\_record\_template](#input\_private\_asg\_record\_template) | The fully qualified domain name format for private Autoscaling Group DNS records | `string` | `"service.internal.domain"` | no |
 | <a name="input_private_instance_record_template"></a> [private\_instance\_record\_template](#input\_private\_instance\_record\_template) | The fully qualified domain name format for private instance DNS records | `string` | `"service.az.domain"` | no |
 | <a name="input_public_asg_record_template"></a> [public\_asg\_record\_template](#input\_public\_asg\_record\_template) | The fully qualified domain name format for public Autoscaling Group DNS records | `string` | `"service.domain"` | no |
 | <a name="input_runtime"></a> [runtime](#input\_runtime) | Runtime binary | `string` | `"python3.12"` | no |
-| <a name="input_secret_name"></a> [secret\_name](#input\_secret\_name) | Daemon Secret Manager | `string` | n/a | yes |
+| <a name="input_secret_name"></a> [secret\_name](#input\_secret\_name) | Daemon Secret Manager | `string` | `""` | no |
 | <a name="input_service"></a> [service](#input\_service) | Autoscaling Group service name, e.g. 'bastion'. This will be prefix for DNS records. | `string` | n/a | yes |
-| <a name="input_slack_webhook"></a> [slack\_webhook](#input\_slack\_webhook) | slack webhook for notifications | `string` | n/a | yes |
+| <a name="input_slack_webhook"></a> [slack\_webhook](#input\_slack\_webhook) | slack webhook for notifications | `string` | `""` | no |
 | <a name="input_sns_topic_name"></a> [sns\_topic\_name](#input\_sns\_topic\_name) | Name for the SNS topic which will handle notifications of instance launch and terminate events | `string` | n/a | yes |
 | <a name="input_ttl"></a> [ttl](#input\_ttl) | TTL value for the DNS record(s) | `number` | `60` | no |
 | <a name="input_zone_id"></a> [zone\_id](#input\_zone\_id) | Id of a zone file to add records to | `string` | n/a | yes |
