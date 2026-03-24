@@ -1,3 +1,14 @@
+## [4.1.0](https://github.com/Daemon-Solutions/tf-aws-asg-lambda-dns/compare/v4.0.11...v4.1.0) (2026-03-24)
+
+### Features
+
+* make Slack/PagerDuty notifications optional ([3866f8f](https://github.com/Daemon-Solutions/tf-aws-asg-lambda-dns/commit/3866f8f8532a562f85b0b0d9f1b08a9de7e326e6))
+
+### Bug Fixes
+
+* **sd-4855:** set enable_slack and enable_pagerduty default to false in terraform ([66ad235](https://github.com/Daemon-Solutions/tf-aws-asg-lambda-dns/commit/66ad235753ac1fec2733040a2be600bd2d6fd600))
+* set new env variable default to false and remove extra logics ([efdc369](https://github.com/Daemon-Solutions/tf-aws-asg-lambda-dns/commit/efdc3695b1e8a6ae0b58fd8635441174bafe798c))
+
 ## [4.0.11](https://github.com/Daemon-Solutions/tf-aws-asg-lambda-dns/compare/v4.0.10...v4.0.11) (2025-08-04)
 
 ### Bug Fixes
